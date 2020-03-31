@@ -240,6 +240,7 @@ class Player {
 
 	void run() {
 		// Parse initial conditions
+		int idRobotRadar=-1;
 		Board board = new Board(in);
 
 		while (true) {
@@ -248,6 +249,15 @@ class Player {
 
 			// Insert your strategy here
 			for (Entity robot : board.myTeam.robots) {
+				if(board.myRadarCooldown==0) {
+					robot.action=Action.request(EntityType.RADAR);
+					idRobotRadar=robot.id;
+				}
+				else if(board.myRadarCooldown>0 || board.myRadarCooldown==0&&idRobotRadar!=-1) {
+					if(robot.id!=idRobotRadar) {
+						
+					}
+				}
 				robot.action = Action.none();
 				robot.action.message = "Java Starter";
 			}
@@ -257,5 +267,9 @@ class Player {
 				System.out.println(robot.action);
 			}
 		}
+	}
+	
+	Coord findPos(Entity robot) {
+		return null;
 	}
 }
