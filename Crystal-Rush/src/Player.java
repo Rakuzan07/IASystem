@@ -227,6 +227,10 @@ class Board {
 	Cell getCell(Coord pos) {
 		return cells[pos.y][pos.x];
 	}
+	
+	Cell[][] getMatrixCell(){
+		return cells;
+	}
 }
 
 
@@ -257,6 +261,16 @@ class Player {
 					if(robot.id!=idRobotRadar) {
 						
 					}
+					else {
+						//Posizioniamo il radar secondo le direttive:
+						//- Se nel range di 7 celle c'è un altro radar scartare momentaneamente la soluzione
+						//-Se non è possibile avere una copertura massima allora permettiamo l'interesezione dei campi individuati dai due radar
+						// selezionando quello ottimale (in cui la superficie controllata sia massima)
+						//Il punto (x,y) per posizionare il radar viene individuato come segue:
+						//-Se ci fossero buche, scegli la buca più vicina
+						//-Altrimenti trova il punto più vicino che permette una massima copertura
+						
+					}
 				}
 				robot.action = Action.none();
 				robot.action.message = "Java Starter";
@@ -271,5 +285,79 @@ class Player {
 	
 	Coord findPos(Entity robot) {
 		return null;
+	}
+}
+
+class Support{
+	ArrayList<Coord> holes=new ArrayList<Coord>();
+	Board board;
+	boolean coveredByRadar[][];
+	private static final int RANGE=4, UP=0,DOWN=1, LEFT=2, RIGHT=3;
+	
+	public Support(Board b) {
+		board=b;
+		coveredByRadar=new boolean[b.height][b.width];
+	}
+	
+	public void constructRadarBoard() {
+		ArrayList<Coord> radarCoord=(ArrayList<Coord>) board.myRadarPos;
+		for(int i=0;i<radarCoord.size();i++) {
+			updateRadarBoard(radarCoord.get(i));
+		}
+	}
+	
+	public void updateRadarBoard(Coord c) {
+		for(int i=0;i<RANGE;i++) {
+			for(int j=0;j<=RANGE-i;j++) {
+			    if(board.cellExist(new Coord(c.x+j,c.y+i)))coveredByRadar[c.y+i][c.x+j]=true;
+			    if(board.cellExist(new Coord(c.x-j,c.y+i)))coveredByRadar[c.y+i][c.x-j]=true;
+			    if(board.cellExist(new Coord(c.x+j,c.y-i)))coveredByRadar[c.y-i][c.x+j]=true;
+			    if(board.cellExist(new Coord(c.x-j,c.y-i)))coveredByRadar[c.y-i][c.x-j]=true;
+			}
+		}
+	}
+	
+	public void findHoles() {
+		for(int i=0;i<board.getMatrixCell().length;i++) {
+			for(int j=0;j<(board.getMatrixCell())[i].length;j++) {
+				if(board.getMatrixCell()[i][j].hole&&!holes.contains(new Coord(i,j))) holes.add(new Coord(i,j));
+			}
+		}
+	}
+	
+	public Coord calculateBestHole(Coord c) {
+		if(holes.size()==0) return null;
+		Coord best=holes.get(0);
+		for(int i=1;i<holes.size();i++) {
+			int distance=c.distance(best);
+			if(distance-(c.distance(holes.get(i)))>0) distance=c.distance(holes.get(i));
+		}
+		return best;
+	}
+	
+	public int[] countOre(Coord c) {
+		int[] ore=new int[RANGE];
+		for(int i=0;i<RANGE;i++) {
+			for(int j=0;j<=RANGE-i;j++) {
+			    if(board.cellExist(new Coord(c.x+j,c.y+i))&& coveredByRadar[c.y+i][c.x+j])ore[UP]++;
+			    if(board.cellExist(new Coord(c.x-j,c.y+i))&& coveredByRadar[c.y+i][c.x-j])ore[UP]++;
+			    if(board.cellExist(new Coord(c.x+j,c.y-i))&& coveredByRadar[c.y-i][c.x+j])ore[DOWN]++;
+			    if(board.cellExist(new Coord(c.x-j,c.y-i))&& coveredByRadar[c.y-i][c.x-j])ore[DOWN]++;
+			}
+		}
+		for(int i=0;i<RANGE;i++) {
+			for(int j=0;j<=RANGE-i;j++) {
+			    if(board.cellExist(new Coord(c.x+i,c.y+j))&& coveredByRadar[c.y+j][c.x+i])ore[RIGHT]++;
+			    if(board.cellExist(new Coord(c.x-i,c.y+j))&& coveredByRadar[c.y+j][c.x-i])ore[RIGHT]++;
+			    if(board.cellExist(new Coord(c.x+i,c.y-j))&& coveredByRadar[c.y-j][c.x+i])ore[LEFT]++;
+			    if(board.cellExist(new Coord(c.x-i,c.y-j))&& coveredByRadar[c.y-j][c.x-i])ore[LEFT]++;
+			}
+		}
+		return ore;
+	}
+	
+	public void thinkRadar(Coord c) {
+		findHoles();
+		if(holes.size()>0);
 	}
 }
