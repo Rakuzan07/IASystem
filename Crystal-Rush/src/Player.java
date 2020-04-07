@@ -368,6 +368,97 @@ class Support{
 		}
 		return cont;
 	}
+	private Coord findPosRec(Coord c,ArrayList<Coord> visited) {
+		visited.add(c);
+		Coord[] pos=new Coord[4];
+		boolean[] finded=new boolean[4];
+		ArrayList<Coord> tempRad=(ArrayList<Coord>)board.myRadarPos;
+		ArrayList<Coord> search=new ArrayList<Coord>();
+		Coord best=null;
+		int promise=0;
+		int penalty=0;
+		for(int i=8;i>4;i--) {
+			if(!finded[RIGHT]&&board.cellExist(new Coord(c.x+i,c.y))) {
+				Coord e=new Coord(c.x+i,c.y);
+				if((best==null&&tempRad.contains(e)) || tempRad.contains(e)) {
+					finded[RIGHT]=true;
+					if(!visited.contains(e)) {search.add(e);}
+				}
+				else if(best==null) {
+					best=e;
+					promise=countOre(c)[RIGHT];
+					penalty=calculateVisible(e);
+				}
+				else {
+					if((promise-penalty)-(countOre(c)[RIGHT]*3-calculateVisible(e))<0) {
+						best=e;
+					}
+				}
+			}
+			if(!finded[LEFT]&&board.cellExist(new Coord(c.x-i,c.y))) {
+				Coord e=new Coord(c.x-i,c.y);
+				if((best==null&&tempRad.contains(e)) || tempRad.contains(e)) {
+					finded[LEFT]=true;
+					if(!visited.contains(e)) {search.add(e);}
+				}
+				else if(best==null) {
+					best=e;
+					promise=countOre(c)[LEFT];
+					penalty=calculateVisible(e);
+				}
+				else {
+					if((promise-penalty)-(countOre(c)[LEFT]*3-calculateVisible(e))<0) {
+						best=e;
+					}
+				}
+			}
+			if(!finded[UP]&&board.cellExist(new Coord(c.x,c.y-i))) {
+				Coord e=new Coord(c.x,c.y-i);
+				if((best==null&&tempRad.contains(e)) || tempRad.contains(e)) {
+					finded[UP]=true;
+					if(!visited.contains(e)) {search.add(e);}
+				}
+				else if(best==null) {
+					best=e;
+					promise=countOre(c)[UP];
+					penalty=calculateVisible(e);
+				}
+				else {
+					if((promise-penalty)-(countOre(c)[UP]*3-calculateVisible(e))<0) {
+						best=e;
+					}
+				}
+			}
+			if(!finded[DOWN]&&board.cellExist(new Coord(c.x,c.y+i))) {
+				Coord e=new Coord(c.x,c.y+i);
+				if((best==null&&tempRad.contains(e)) || tempRad.contains(e)) {
+					finded[DOWN]=true;
+					if(!visited.contains(e)) {search.add(e);}
+				}
+				else if(best==null) {
+					best=e;
+					promise=countOre(c)[DOWN];
+					penalty=calculateVisible(e);
+				}
+				else {
+					if((promise-penalty)-(countOre(c)[DOWN]*3-calculateVisible(e))<0) {
+						best=e;
+					}
+				}
+			}
+		}
+		if (best!=null) return best;
+		while(search.size()>0) {
+			Coord s=search.remove(0);
+			if(s!=null) return s;
+		}
+		return null;
+	}
+	
+	public Coord findPos() {
+		Coord c=((ArrayList<Coord>)board.myRadarPos).get(0);
+		return findPosRec(c,new ArrayList<Coord>());
+	}
 	
 	public void thinkRadar(Coord c) {
 		ArrayList<Coord> radarCoord=(ArrayList<Coord>) board.myRadarPos;
