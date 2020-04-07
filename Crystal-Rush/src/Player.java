@@ -250,7 +250,7 @@ class Player {
 		while (true) {
 			// Parse current state of the game
 			board.update(in);
-
+			Support support= new Support(board);
 			// Insert your strategy here
 			for (Entity robot : board.myTeam.robots) {
 				if(board.myRadarCooldown==0&&idRobotRadar==-1) {
@@ -259,7 +259,25 @@ class Player {
 				}
 				else if(board.myRadarCooldown>0 || board.myRadarCooldown==0&&idRobotRadar!=-1) {
 					if(robot.id!=idRobotRadar) {
+						//per provare, vedi il primo radar, e se c'è un ore vacci
+						Coord[] radars=board.myRadarPos.toArray(new Coord[0]);
+						support.constructRadarBoard();
+						if(radars.length>0) {
+							support.updateRadarBoard(radars[0]);
 						
+							for(int i=0;i<board.height;i++) {
+								for(int j=0;j<=board.width;j++) {
+								    if(support.coveredByRadar[i][j] && board.getCell(new Coord(radars[0].x, radars[0].y+1)).ore>0)
+								    	robot.action=Action.dig(new Coord(radars[0].x, radars[0].y+1));
+								    else if(support.coveredByRadar[i][j] && board.getCell(new Coord(radars[0].x, radars[0].y-1)).ore>0)
+								    	robot.action=Action.dig(new Coord(radars[0].x, radars[0].y+1));
+								    else if(support.coveredByRadar[i][j] && board.getCell(new Coord(radars[0].x+1, radars[0].y)).ore>0)
+								    	robot.action=Action.dig(new Coord(radars[0].x, radars[0].y+1));
+								    else if(support.coveredByRadar[i][j] && board.getCell(new Coord(radars[0].x-1, radars[0].y+1)).ore>0)
+								    	robot.action=Action.dig(new Coord(radars[0].x, radars[0].y+1));
+								}
+							}
+						}
 					}
 					else {
 						//Posizioniamo il radar secondo le direttive:
@@ -272,13 +290,15 @@ class Player {
 						
 					}
 				}
-				robot.action = Action.none();
-				robot.action.message = "Java Starter";
+				//robot.action = Action.none();
+				//robot.action.message = "Java Starter";
 			}
 
 			// Send your actions for this turn
 			for (Entity robot : board.myTeam.robots) {
-				System.out.println(robot.action);
+				if(robot.action!=null)
+					System.out.println(robot.action);
+					else System.out.println("WAIT");
 			}
 		}
 	}
