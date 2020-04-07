@@ -253,7 +253,7 @@ class Player {
 
 			// Insert your strategy here
 			for (Entity robot : board.myTeam.robots) {
-				if(board.myRadarCooldown==0) {
+				if(board.myRadarCooldown==0&&idRobotRadar==-1) {
 					robot.action=Action.request(EntityType.RADAR);
 					idRobotRadar=robot.id;
 				}
@@ -356,8 +356,36 @@ class Support{
 		return ore;
 	}
 	
+	public int calculateVisible(Coord c) {
+		int cont=0;
+		for(int i=0;i<RANGE;i++) {
+			for(int j=0;j<=RANGE-i;j++) {
+			    if(board.cellExist(new Coord(c.x+j,c.y+i))&& coveredByRadar[c.y+i][c.x+j])cont++;
+			    if(board.cellExist(new Coord(c.x-j,c.y+i))&& coveredByRadar[c.y+i][c.x-j])cont++;
+			    if(board.cellExist(new Coord(c.x+j,c.y-i))&& coveredByRadar[c.y-i][c.x+j])cont++;
+			    if(board.cellExist(new Coord(c.x-j,c.y-i))&& coveredByRadar[c.y-i][c.x-j])cont++;
+			}
+		}
+		return cont;
+	}
+	
 	public void thinkRadar(Coord c) {
-		findHoles();
-		if(holes.size()>0);
+		ArrayList<Coord> radarCoord=(ArrayList<Coord>) board.myRadarPos;
+		if(radarCoord.size()==0) {
+			//Il primo radar viene posizionato in una posizione centrale nella mappa
+			int height=board.height;
+			int width=board.width;
+			System.out.println("DIVE "+width/2+" "+height/2);
+		}
+		else {
+			//C'è almeno un radar nella mappa che usiamo come punto di riferimento
+			Object[] best=new Object[3];
+			for(int i=0;i<radarCoord.size();i++) {
+				if(i==0) {
+					best[0]=radarCoord.get(i);
+					
+				}
+			}
+		}
 	}
 }
