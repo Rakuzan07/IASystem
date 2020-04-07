@@ -267,14 +267,9 @@ class Player {
 						
 							for(int i=0;i<board.height;i++) {
 								for(int j=0;j<=board.width;j++) {
-								    if(support.coveredByRadar[i][j] && board.getCell(new Coord(radars[0].x, radars[0].y+1)).ore>0)
-								    	robot.action=Action.dig(new Coord(radars[0].x, radars[0].y+1));
-								    else if(support.coveredByRadar[i][j] && board.getCell(new Coord(radars[0].x, radars[0].y-1)).ore>0)
-								    	robot.action=Action.dig(new Coord(radars[0].x, radars[0].y+1));
-								    else if(support.coveredByRadar[i][j] && board.getCell(new Coord(radars[0].x+1, radars[0].y)).ore>0)
-								    	robot.action=Action.dig(new Coord(radars[0].x, radars[0].y+1));
-								    else if(support.coveredByRadar[i][j] && board.getCell(new Coord(radars[0].x-1, radars[0].y+1)).ore>0)
-								    	robot.action=Action.dig(new Coord(radars[0].x, radars[0].y+1));
+								    if(support.coveredByRadar[i][j] && board.getCell(new Coord(i, j)).ore>0)
+								    	robot.action=Action.dig(new Coord(i, j));
+								  
 								}
 							}
 						}
