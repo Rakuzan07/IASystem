@@ -275,6 +275,8 @@ class Player {
 						}
 					}
 					else {
+						
+						robot.action=Action.dig(support.thinkRadar());
 						//Posizioniamo il radar secondo le direttive:
 						//- Se nel range di 7 celle c'è un altro radar scartare momentaneamente la soluzione
 						//-Se non è possibile avere una copertura massima allora permettiamo l'interesezione dei campi individuati dai due radar
@@ -475,13 +477,14 @@ class Support{
 		return findPosRec(c,new ArrayList<Coord>());
 	}
 	
-	public void thinkRadar(Coord c) {
+	public Coord thinkRadar() {
 		ArrayList<Coord> radarCoord=(ArrayList<Coord>) board.myRadarPos;
 		if(radarCoord.size()==0) {
 			//Il primo radar viene posizionato in una posizione centrale nella mappa
 			int height=board.height;
 			int width=board.width;
-			System.out.println("DIVE "+width/2+" "+height/2);
+			return new Coord(width/2,height/2);
+			//System.out.println("DIG "+width/2+" "+height/2);
 		}
 		else {
 			//C'è almeno un radar nella mappa che usiamo come punto di riferimento
@@ -492,6 +495,9 @@ class Support{
 					
 				}
 			}
+			//provvisorio
+			return new Coord(1,1);
 		}
+		
 	}
 }
