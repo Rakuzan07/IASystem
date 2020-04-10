@@ -385,7 +385,7 @@ class Support{
 		}
 		return cont;
 	}
-	private Coord findPosRec(Coord c,ArrayList<Coord> visited) {
+	private Coord findPosRec(Coord c,ArrayList<Coord> visited, Object[] memory) {
 		visited.add(c);
 		boolean[] finded=new boolean[4];
 		ArrayList<Coord> tempRad=(ArrayList<Coord>)board.myRadarPos;
@@ -396,8 +396,8 @@ class Support{
 		for(int i=8;i>4;i--) {
 			if(!finded[RIGHT]&&board.cellExist(new Coord(c.x+i,c.y))) {
 				Coord e=new Coord(c.x+i,c.y);
+				finded[RIGHT]=true;
 				if((best==null&&tempRad.contains(e)) || tempRad.contains(e)) {
-					finded[RIGHT]=true;
 					if(!visited.contains(e)) {search.add(e);}
 				}
 				else if(best==null) {
@@ -406,15 +406,33 @@ class Support{
 					penalty=calculateVisible(e);
 				}
 				else {
-					if((promise-penalty)-(countOre(c)[RIGHT]*3-calculateVisible(e))<0) {
+					if((promise*3-penalty)-(countOre(c)[RIGHT]*3-calculateVisible(e))<0) {
 						best=e;
+						promise=countOre(c)[RIGHT];
+						penalty=calculateVisible(e);
 					}
+				}
+				if(memory[0]==null) {
+					if(tempRad.contains(e)) {
+						memory[0]=e;
+						memory[1]=-1;
+					}
+					else {
+						memory[0]=e;
+						memory[1]=countOre(c)[RIGHT]*3-calculateVisible(e);
+					}
+				}
+				else {
+					if((Integer)memory[1]-countOre(c)[RIGHT]*3-calculateVisible(e)<0) {
+						memory[0]=e;
+						memory[1]=countOre(c)[RIGHT]*3-calculateVisible(e);
+					};
 				}
 			}
 			if(!finded[LEFT]&&board.cellExist(new Coord(c.x-i,c.y))) {
 				Coord e=new Coord(c.x-i,c.y);
+				finded[LEFT]=true;
 				if((best==null&&tempRad.contains(e)) || tempRad.contains(e)) {
-					finded[LEFT]=true;
 					if(!visited.contains(e)) {search.add(e);}
 				}
 				else if(best==null) {
@@ -423,15 +441,33 @@ class Support{
 					penalty=calculateVisible(e);
 				}
 				else {
-					if((promise-penalty)-(countOre(c)[LEFT]*3-calculateVisible(e))<0) {
+					if((promise*3-penalty)-(countOre(c)[LEFT]*3-calculateVisible(e))<0) {
 						best=e;
+						promise=countOre(c)[LEFT];
+						penalty=calculateVisible(e);
 					}
+				}
+				if(memory[0]==null) {
+					if(tempRad.contains(e)) {
+						memory[0]=e;
+						memory[1]=-1;
+					}
+					else {
+						memory[0]=e;
+						memory[1]=countOre(c)[LEFT]*3-calculateVisible(e);
+					}
+				}
+				else {
+					if((Integer)memory[1]-countOre(c)[LEFT]*3-calculateVisible(e)<0) {
+						memory[0]=e;
+						memory[1]=countOre(c)[LEFT]*3-calculateVisible(e);
+					};
 				}
 			}
 			if(!finded[UP]&&board.cellExist(new Coord(c.x,c.y-i))) {
 				Coord e=new Coord(c.x,c.y-i);
+				finded[UP]=true;
 				if((best==null&&tempRad.contains(e)) || tempRad.contains(e)) {
-					finded[UP]=true;
 					if(!visited.contains(e)) {search.add(e);}
 				}
 				else if(best==null) {
@@ -440,15 +476,33 @@ class Support{
 					penalty=calculateVisible(e);
 				}
 				else {
-					if((promise-penalty)-(countOre(c)[UP]*3-calculateVisible(e))<0) {
+					if((promise*3-penalty)-(countOre(c)[UP]*3-calculateVisible(e))<0) {
 						best=e;
+						promise=countOre(c)[UP];
+						penalty=calculateVisible(e);
 					}
+				}
+				if(memory[0]==null) {
+					if(tempRad.contains(e)) {
+						memory[0]=e;
+						memory[1]=-1;
+					}
+					else {
+						memory[0]=e;
+						memory[1]=countOre(c)[UP]*3-calculateVisible(e);
+					}
+				}
+				else {
+					if((Integer)memory[1]-countOre(c)[UP]*3-calculateVisible(e)<0) {
+						memory[0]=e;
+						memory[1]=countOre(c)[UP]*3-calculateVisible(e);
+					};
 				}
 			}
 			if(!finded[DOWN]&&board.cellExist(new Coord(c.x,c.y+i))) {
 				Coord e=new Coord(c.x,c.y+i);
+				finded[DOWN]=true;
 				if((best==null&&tempRad.contains(e)) || tempRad.contains(e)) {
-					finded[DOWN]=true;
 					if(!visited.contains(e)) {search.add(e);}
 				}
 				else if(best==null) {
@@ -457,23 +511,42 @@ class Support{
 					penalty=calculateVisible(e);
 				}
 				else {
-					if((promise-penalty)-(countOre(c)[DOWN]*3-calculateVisible(e))<0) {
+					if((promise*3-penalty)-(countOre(c)[DOWN]*3-calculateVisible(e))<0) {
 						best=e;
+						promise=countOre(c)[DOWN];
+						penalty=calculateVisible(e);
 					}
+				}
+				if(memory[0]==null) {
+					if(tempRad.contains(e)) {
+						memory[0]=e;
+						memory[1]=-1;
+					}
+					else {
+						memory[0]=e;
+						memory[1]=countOre(c)[DOWN]*3-calculateVisible(e);
+					}
+				}
+				else {
+					if((Integer)memory[1]-countOre(c)[DOWN]*3-calculateVisible(e)<0) {
+						memory[0]=e;
+						memory[1]=countOre(c)[DOWN]*3-calculateVisible(e);
+					};
 				}
 			}
 		}
-		if (best!=null) return best;
 		while(search.size()>0) {
 			Coord s=search.remove(0);
-			if(s!=null) return s;
+			findPosRec(s,visited,memory);
 		}
+		if((Integer)memory[1]!=-1) return (Coord)memory[0];
 		return null;
 	}
 	
 	public Coord findPos() {
 		Coord c=((ArrayList<Coord>)board.myRadarPos).get(0);
-		return findPosRec(c,new ArrayList<Coord>());
+		Object[] memory=new Object[2];
+		return findPosRec(c,new ArrayList<Coord>(),memory);
 	}
 	
 	public Coord thinkRadar() {
