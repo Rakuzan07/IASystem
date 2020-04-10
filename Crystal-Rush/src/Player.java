@@ -266,9 +266,9 @@ class Player {
 							support.updateRadarBoard(radars[0]);
 						
 							for(int i=0;i<board.height;i++) {
-								for(int j=0;j<=board.width;j++) {
-								    if(support.coveredByRadar[i][j] && board.getCell(new Coord(i, j)).ore>0)
-								    	robot.action=Action.dig(new Coord(i, j));
+								for(int j=0;j<board.width;j++) {
+								    if(support.coveredByRadar[i][j] && board.getCell(new Coord(j, i)).ore>0)
+								    	robot.action=Action.dig(new Coord(j, i));
 								  
 								}
 							}
@@ -387,7 +387,6 @@ class Support{
 	}
 	private Coord findPosRec(Coord c,ArrayList<Coord> visited) {
 		visited.add(c);
-		Coord[] pos=new Coord[4];
 		boolean[] finded=new boolean[4];
 		ArrayList<Coord> tempRad=(ArrayList<Coord>)board.myRadarPos;
 		ArrayList<Coord> search=new ArrayList<Coord>();
@@ -484,19 +483,10 @@ class Support{
 			int height=board.height;
 			int width=board.width;
 			return new Coord(width/2,height/2);
-			//System.out.println("DIG "+width/2+" "+height/2);
 		}
 		else {
 			//C'è almeno un radar nella mappa che usiamo come punto di riferimento
-			Object[] best=new Object[3];
-			for(int i=0;i<radarCoord.size();i++) {
-				if(i==0) {
-					best[0]=radarCoord.get(i);
-					
-				}
-			}
-			//provvisorio
-			return new Coord(1,1);
+			return findPos();
 		}
 		
 	}
