@@ -259,18 +259,27 @@ class Player {
 				}
 				else if(board.myRadarCooldown>0 || board.myRadarCooldown==0&&idRobotRadar!=-1) {
 					if(robot.id!=idRobotRadar) {
-						//per provare, vedi il primo radar, e se c'è un ore vacci
-						Coord[] radars=board.myRadarPos.toArray(new Coord[0]);
-						support.constructRadarBoard();
-						if(radars.length>0) {
-							support.updateRadarBoard(radars[0]);
-						
-							for(int i=0;i<board.height;i++) {
-								for(int j=0;j<board.width;j++) {
-								    if(support.coveredByRadar[i][j] && board.getCell(new Coord(j, i)).ore>0)
-								    	robot.action=Action.dig(new Coord(j, i));
-								  
-								}
+						if(robot.item==EntityType.AMADEUSIUM)
+							robot.action=Action.move(new Coord(0,robot.pos.y));
+						else {
+							Coord[] radars=board.myRadarPos.toArray(new Coord[0]);
+							support.constructRadarBoard();
+							if(radars.length>0) {
+								
+	
+								for(int i=0; i<radars.length; i++)
+									support.updateRadarBoard(radars[i]);
+								
+								Coord closest=new Coord(100, 100);
+								
+									for(int i=0;i<board.height;i++) 
+										for(int j=0;j<board.width;j++) {
+										    if(support.coveredByRadar[i][j] && 
+										    		board.getCell(new Coord(j, i)).ore>0 &&
+										    		robot.pos.distance(new Coord(j, i))< robot.pos.distance(closest))
+										    	closest=new Coord(j, i);								 
+										}
+									robot.action=Action.dig(closest);						
 							}
 						}
 					}
