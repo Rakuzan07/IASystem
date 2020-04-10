@@ -253,6 +253,7 @@ class Player {
 			Support support= new Support(board);
 			// Insert your strategy here
 			for (Entity robot : board.myTeam.robots) {
+				if(robot.item==EntityType.NOTHING && robot.id==idRobotRadar) idRobotRadar=-1;
 				if(board.myRadarCooldown==0&&idRobotRadar==-1) {
 					robot.action=Action.request(EntityType.RADAR);
 					idRobotRadar=robot.id;
