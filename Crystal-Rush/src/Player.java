@@ -243,6 +243,7 @@ class Player {
 			// Parse current state of the game
 			board.update(in);
 			Support support= new Support(board);
+			Coord postrap=support.estimate((ArrayList<Entity>)board.opponentTeam.robots);
 			// Insert your strategy here
 			for (Entity robot : board.myTeam.robots) {
 				if(robot.item!=EntityType.RADAR && robot.id==idRobotRadar) idRobotRadar=-1;
@@ -306,12 +307,15 @@ class Player {
 class Support {
 	ArrayList<Coord> holes = new ArrayList<Coord>();
 	Board board;
-	boolean coveredByRadar[][];
-	private static final int RANGE = 4, UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3;
-
+	boolean[][] coveredByRadar;
+	int[][] forecastMatrix;
+	private static final int RANGE = 4, UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3, FILLING_FACTOR=25 , EST=6;
+    int estimator=0;
+    
 	public Support(Board b) {
 		board = b;
 		coveredByRadar = new boolean[b.height][b.width];
+		forecastMatrix= new int[b.height][b.width];
 	}
 
 	public void constructRadarBoard() {
@@ -584,5 +588,26 @@ class Support {
 			return findPos();
 		}
 
+	}
+	
+	public Coord estimate(ArrayList<Entity> enemy) {
+		estimator=(estimator+1)%EST;
+		for(int i=0;i<enemy.size();i++) {
+			Coord c=enemy.get(i).pos;
+			forecastMatrix[c.y][c.x]++;
+		}
+		Coord best=null;
+		int numVisit=0;
+		if(estimator==(EST-1)) {
+			for(int i=0;i<forecastMatrix.length;i++) {
+				for(int j=1;j<forecastMatrix[i].length;j++) {
+					if(numVisit<forecastMatrix[i][j]) {
+						numVisit=forecastMatrix[i][j];
+						best=new Coord(j,i);
+					}
+				}
+			}
+		}
+		return best;
 	}
 }
