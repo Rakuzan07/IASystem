@@ -236,73 +236,71 @@ class Player {
 
 	void run() {
 		// Parse initial conditions
-		int idRobotRadar = -1;
+		int idRobotRadar=-1;
 		Board board = new Board(in);
 
 		while (true) {
 			// Parse current state of the game
 			board.update(in);
-			Support support = new Support(board);
+			Support support= new Support(board);
 			// Insert your strategy here
 			for (Entity robot : board.myTeam.robots) {
-				if (board.myRadarCooldown == 0 && idRobotRadar == -1) {
-					robot.action = Action.request(EntityType.RADAR);
-					idRobotRadar = robot.id;
-				} else if (board.myRadarCooldown > 0 || board.myRadarCooldown == 0 && idRobotRadar != -1) {
-					if (robot.id != idRobotRadar) {
-						if (robot.item == EntityType.AMADEUSIUM)
-							robot.action = Action.move(new Coord(0, robot.pos.y));
+				if(robot.item!=EntityType.RADAR && robot.id==idRobotRadar) idRobotRadar=-1;
+				if(board.myRadarCooldown==0&&idRobotRadar==-1) {
+					robot.action=Action.request(EntityType.RADAR);
+					idRobotRadar=robot.id;
+				}
+				else if(board.myRadarCooldown>0 || board.myRadarCooldown==0&&idRobotRadar!=-1) {
+					if(robot.id!=idRobotRadar) {
+						if(robot.item==EntityType.AMADEUSIUM)
+							robot.action=Action.move(new Coord(0,robot.pos.y));
 						else {
-							Coord[] radars = board.myRadarPos.toArray(new Coord[0]);
+							Coord[] radars=board.myRadarPos.toArray(new Coord[0]);
 							support.constructRadarBoard();
-							if (radars.length > 0) {
-
-								for (int i = 0; i < radars.length; i++)
+							if(radars.length>0) {
+								
+	
+								for(int i=0; i<radars.length; i++)
 									support.updateRadarBoard(radars[i]);
-
-								Coord closest = new Coord(100, 100);
-
-								for (int i = 0; i < board.height; i++)
-									for (int j = 0; j < board.width; j++) {
-										if (support.coveredByRadar[i][j] && board.getCell(new Coord(j, i)).ore > 0
-												&& robot.pos.distance(new Coord(j, i)) < robot.pos.distance(closest))
-											closest = new Coord(j, i);
-									}
-								robot.action = Action.dig(closest);
+								
+								Coord closest=new Coord(100, 100);
+								
+									for(int i=0;i<board.height;i++) 
+										for(int j=0;j<board.width;j++) {
+										    if(support.coveredByRadar[i][j] && 
+										    		board.getCell(new Coord(j, i)).ore>0 &&
+										    		robot.pos.distance(new Coord(j, i))< robot.pos.distance(closest))
+										    	closest=new Coord(j, i);								 
+										}
+									robot.action=Action.dig(closest);						
 							}
 						}
-					} else {
-
-						robot.action = Action.dig(support.thinkRadar());
-						// Posizioniamo il radar secondo le direttive:
-						// - Se nel range di 7 celle c'è un altro radar scartare momentaneamente la
-						// soluzione
-						// -Se non è possibile avere una copertura massima allora permettiamo
-						// l'interesezione dei campi individuati dai due radar
-						// selezionando quello ottimale (in cui la superficie controllata sia massima)
-						// Il punto (x,y) per posizionare il radar viene individuato come segue:
-						// -Se ci fossero buche, scegli la buca più vicina
-						// -Altrimenti trova il punto più vicino che permette una massima copertura
-
+					}
+					else {
+						
+						robot.action=Action.dig(support.thinkRadar());
+				
+						
 					}
 				}
-				// robot.action = Action.none();
-				// robot.action.message = "Java Starter";
+				//robot.action = Action.none();
+				//robot.action.message = "Java Starter";
 			}
 
 			// Send your actions for this turn
 			for (Entity robot : board.myTeam.robots) {
-				if (robot.action != null)
+				if(robot.action!=null)
 					System.out.println(robot.action);
-				else
-					System.out.println("WAIT");
+					else System.out.println("WAIT");
 			}
 		}
 	}
-
+	
 	Coord findPos(Entity robot) {
 		return null;
 	}
+
+
 }
 
 class Support {
