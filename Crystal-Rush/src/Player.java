@@ -275,6 +275,10 @@ class Player {
 										}
 									robot.action=Action.dig(closest);						
 							}
+							else {
+								//robot.action=Action.dig(new Coord(startingMovements, robot.pos.y));
+								robot.action=Action.move(new Coord(board.width/2, board.height/2));
+							}
 						}
 					}
 					else {
