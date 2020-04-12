@@ -237,6 +237,7 @@ class Player {
 	void run() {
 		// Parse initial conditions
 		int idRobotRadar=-1;
+		int idRobotTrap=-1;
 		Board board = new Board(in);
 
 		while (true) {
@@ -247,12 +248,17 @@ class Player {
 			// Insert your strategy here
 			for (Entity robot : board.myTeam.robots) {
 				if(robot.item!=EntityType.RADAR && robot.id==idRobotRadar) idRobotRadar=-1;
-				if(board.myRadarCooldown==0&&idRobotRadar==-1) {
+				if(robot.item!=EntityType.TRAP && robot.id==idRobotTrap) idRobotTrap=-1;
+				if(board.myRadarCooldown==0&&idRobotRadar==-1&&robot.id!=idRobotTrap) {
 					robot.action=Action.request(EntityType.RADAR);
 					idRobotRadar=robot.id;
 				}
-				else if(board.myRadarCooldown>0 || board.myRadarCooldown==0&&idRobotRadar!=-1) {
-					if(robot.id!=idRobotRadar) {
+				else if(board.myTrapCooldown==0&&idRobotTrap==-1&&postrap!=null&&robot.id!=idRobotRadar) {
+					robot.action=Action.request(EntityType.TRAP);
+					idRobotTrap=robot.id;
+				}
+				if(idRobotRadar!=robot.id&&idRobotTrap!=robot.id) {
+					
 						if(robot.item==EntityType.AMADEUSIUM)
 							robot.action=Action.move(new Coord(0,robot.pos.y));
 						else {
@@ -260,7 +266,6 @@ class Player {
 							support.constructRadarBoard();
 							if(radars.length>0) {
 								
-	
 								for(int i=0; i<radars.length; i++)
 									support.updateRadarBoard(radars[i]);
 								
@@ -275,22 +280,19 @@ class Player {
 										}
 									robot.action=Action.dig(closest);						
 							}
-							else {
-								//robot.action=Action.dig(new Coord(startingMovements, robot.pos.y));
+							else 
 								robot.action=Action.move(new Coord(board.width/2, board.height/2));
 							}
 						}
-					}
-					else {
-						
+					
+					else if(robot.id==idRobotRadar && board.myRadarCooldown>0) 					
 						robot.action=Action.dig(support.thinkRadar());
+					else if(robot.id==idRobotTrap && board.myTrapCooldown>0)
+						robot.action=Action.dig(postrap);
 				
-						
-					}
-				}
 				//robot.action = Action.none();
 				//robot.action.message = "Java Starter";
-			}
+			}//FINE FOR
 
 			// Send your actions for this turn
 			for (Entity robot : board.myTeam.robots) {
