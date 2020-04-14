@@ -236,77 +236,76 @@ class Player {
 
 	void run() {
 		// Parse initial conditions
-		int idRobotRadar=-1;
-		int idRobotTrap=-1;
+		int idRobotRadar = -1;
+		int idRobotTrap = -1;
 		Board board = new Board(in);
-
+		Support support = new Support(board);
 		while (true) {
 			// Parse current state of the game
 			board.update(in);
-			Support support= new Support(board);
-			Coord postrap=support.estimate((ArrayList<Entity>)board.opponentTeam.robots);
+            Coord postrap=null;
 			// Insert your strategy here
 			for (Entity robot : board.myTeam.robots) {
-				if(robot.item!=EntityType.RADAR && robot.id==idRobotRadar) idRobotRadar=-1;
-				if(robot.item!=EntityType.TRAP && robot.id==idRobotTrap) idRobotTrap=-1;
-				if(board.myRadarCooldown==0&&idRobotRadar==-1&&robot.id!=idRobotTrap) {
-					robot.action=Action.request(EntityType.RADAR);
-					idRobotRadar=robot.id;
+				if (robot.item != EntityType.RADAR && robot.id == idRobotRadar)
+					idRobotRadar = -1;
+				if (robot.item != EntityType.TRAP && robot.id == idRobotTrap)
+					idRobotTrap = -1;
+				if (board.myRadarCooldown == 0 && idRobotRadar == -1 && robot.id != idRobotTrap) {
+					robot.action = Action.request(EntityType.RADAR);
+					idRobotRadar = robot.id;
+				} else if (board.myTrapCooldown == 0 && idRobotTrap == -1 && robot.id != idRobotRadar) {
+					robot.action = Action.request(EntityType.TRAP);
+					idRobotTrap = robot.id;
+					postrap = support.estimate((ArrayList<Entity>) board.opponentTeam.robots);
 				}
-				else if(board.myTrapCooldown==0&&idRobotTrap==-1&&postrap!=null&&robot.id!=idRobotRadar) {
-					robot.action=Action.request(EntityType.TRAP);
-					idRobotTrap=robot.id;
+				if (idRobotRadar != robot.id && idRobotTrap != robot.id) {
+
+					if (robot.item == EntityType.AMADEUSIUM)
+						robot.action = Action.move(new Coord(0, robot.pos.y));
+					else {
+						Coord[] radars = board.myRadarPos.toArray(new Coord[0]);
+						support.constructRadarBoard();
+						if (radars.length > 0) {
+
+							for (int i = 0; i < radars.length; i++)
+								support.updateRadarBoard(radars[i]);
+
+							Coord closest = new Coord(100, 100);
+
+							for (int i = 0; i < board.height; i++)
+								for (int j = 0; j < board.width; j++) {
+									if (support.coveredByRadar[i][j] && board.getCell(new Coord(j, i)).ore > 0
+											&& robot.pos.distance(new Coord(j, i)) < robot.pos.distance(closest))
+										closest = new Coord(j, i);
+								}
+							robot.action = Action.dig(closest);
+						} else
+							robot.action = Action.move(new Coord(board.width / 2, board.height / 2));
+					}
 				}
-				if(idRobotRadar!=robot.id&&idRobotTrap!=robot.id) {
-					
-						if(robot.item==EntityType.AMADEUSIUM)
-							robot.action=Action.move(new Coord(0,robot.pos.y));
-						else {
-							Coord[] radars=board.myRadarPos.toArray(new Coord[0]);
-							support.constructRadarBoard();
-							if(radars.length>0) {
-								
-								for(int i=0; i<radars.length; i++)
-									support.updateRadarBoard(radars[i]);
-								
-								Coord closest=new Coord(100, 100);
-								
-									for(int i=0;i<board.height;i++) 
-										for(int j=0;j<board.width;j++) {
-										    if(support.coveredByRadar[i][j] && 
-										    		board.getCell(new Coord(j, i)).ore>0 &&
-										    		robot.pos.distance(new Coord(j, i))< robot.pos.distance(closest))
-										    	closest=new Coord(j, i);								 
-										}
-									robot.action=Action.dig(closest);						
-							}
-							else 
-								robot.action=Action.move(new Coord(board.width/2, board.height/2));
-							}
-						}
-					
-					else if(robot.id==idRobotRadar && board.myRadarCooldown>0) 					
-						robot.action=Action.dig(support.thinkRadar());
-					else if(robot.id==idRobotTrap && board.myTrapCooldown>0)
-						robot.action=Action.dig(postrap);
-				
-				//robot.action = Action.none();
-				//robot.action.message = "Java Starter";
-			}//FINE FOR
+
+				else if (robot.id == idRobotRadar && board.myRadarCooldown > 0)
+					robot.action = Action.dig(support.thinkRadar());
+				else if (robot.id == idRobotTrap && board.myTrapCooldown > 0)
+					robot.action = Action.dig(postrap);
+
+				// robot.action = Action.none();
+				// robot.action.message = "Java Starter";
+			} // FINE FOR
 
 			// Send your actions for this turn
 			for (Entity robot : board.myTeam.robots) {
-				if(robot.action!=null)
+				if (robot.action != null)
 					System.out.println(robot.action);
-					else System.out.println("WAIT");
+				else
+					System.out.println("WAIT");
 			}
 		}
 	}
-	
+
 	Coord findPos(Entity robot) {
 		return null;
 	}
-
 
 }
 
@@ -315,13 +314,12 @@ class Support {
 	Board board;
 	boolean[][] coveredByRadar;
 	int[][] forecastMatrix;
-	private static final int RANGE = 4, UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3, FILLING_FACTOR=25 , EST=6;
-    int estimator=0;
-    
+	private static final int RANGE = 4, UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3;
+
 	public Support(Board b) {
 		board = b;
 		coveredByRadar = new boolean[b.height][b.width];
-		forecastMatrix= new int[b.height][b.width];
+		forecastMatrix = new int[b.height][b.width];
 	}
 
 	public void constructRadarBoard() {
@@ -595,22 +593,36 @@ class Support {
 		}
 
 	}
-	
+
 	public Coord estimate(ArrayList<Entity> enemy) {
-		estimator=(estimator+1)%EST;
-		for(int i=0;i<enemy.size();i++) {
-			Coord c=enemy.get(i).pos;
-			forecastMatrix[c.y][c.x]++;
+		for (int i = 0; i < enemy.size(); i++) {
+			Coord c = enemy.get(i).pos;
+			forecastMatrix[c.y][c.x] = forecastMatrix[c.y][c.x] + 3;
+			if (board.cellExist(new Coord(c.x + 1, c.y)))
+				forecastMatrix[c.y][c.x + 1]++;
+			if (board.cellExist(new Coord(c.x - 1, c.y)))
+				forecastMatrix[c.y][c.x - 1]++;
+			if (board.cellExist(new Coord(c.x, c.y + 1)))
+				forecastMatrix[c.y + 1][c.x]++;
+			if (board.cellExist(new Coord(c.x, c.y - 1)))
+				forecastMatrix[c.y - 1][c.x]++;
+			if (board.cellExist(new Coord(c.x - 1, c.y - 1)))
+				forecastMatrix[c.y - 1][c.x - 1]++;
+			if (board.cellExist(new Coord(c.x + 1, c.y - 1)))
+				forecastMatrix[c.y - 1][c.x + 1]++;
+			if (board.cellExist(new Coord(c.x + 1, c.y + 1)))
+				forecastMatrix[c.y + 1][c.x + 1]++;
+			if (board.cellExist(new Coord(c.x - 1, c.y + 1)))
+				forecastMatrix[c.y + 1][c.x - 1]++;
 		}
-		Coord best=null;
-		int numVisit=0;
-		if(estimator==(EST-1)) {
-			for(int i=0;i<forecastMatrix.length;i++) {
-				for(int j=1;j<forecastMatrix[i].length;j++) {
-					if(numVisit<forecastMatrix[i][j]) {
-						numVisit=forecastMatrix[i][j];
-						best=new Coord(j,i);
-					}
+		Coord best = null;
+		int numVisit = 0;
+		for (int i = 0; i < forecastMatrix.length; i++) {
+			for (int j = 1; j < forecastMatrix[i].length; j++) {
+				if (numVisit < forecastMatrix[i][j]) {
+					numVisit = forecastMatrix[i][j];
+					forecastMatrix[i][j] = 0;
+					best = new Coord(j, i);
 				}
 			}
 		}
