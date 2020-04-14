@@ -240,17 +240,17 @@ class Player {
 		int idRobotTrap = -1;
 		Board board = new Board(in);
 		Support support = new Support(board);
-		Coord postrap=null;
-		Coord lastdug=null;
+		Coord postrap = null;
+		Coord lastdug = null;
 		while (true) {
 			// Parse current state of the game
 			board.update(in);
-            
+
 			// Insert your strategy here
 			for (Entity robot : board.myTeam.robots) {
-				
-				if(!robot.pos.equals(new Coord(-1,-1))) {//actions only for the non dead robots
-					
+
+				if (!robot.pos.equals(new Coord(-1, -1))) {// actions only for the non dead robots
+
 					if (robot.item != EntityType.RADAR && robot.id == idRobotRadar)
 						idRobotRadar = -1;
 					if (robot.item != EntityType.TRAP && robot.id == idRobotTrap)
@@ -264,27 +264,26 @@ class Player {
 						postrap = support.estimate((ArrayList<Entity>) board.opponentTeam.robots);
 					}
 					if (idRobotRadar != robot.id && idRobotTrap != robot.id) {
-	
+
 						if (robot.item == EntityType.AMADEUSIUM)
 							robot.action = Action.move(new Coord(0, robot.pos.y));
 						else {
 							Coord[] radars = board.myRadarPos.toArray(new Coord[0]);
 							support.constructRadarBoard();
 							if (radars.length > 0) {
-	
+
 								for (int i = 0; i < radars.length; i++)
 									support.updateRadarBoard(radars[i]);
-	
+
 								Coord closest = new Coord(100, 100);
-	
+
 								for (int i = 0; i < board.height; i++)
 									for (int j = 0; j < board.width; j++) {
 										if (support.coveredByRadar[i][j] && board.getCell(new Coord(j, i)).ore > 0
 												&& robot.pos.distance(new Coord(j, i)) < robot.pos.distance(closest)
-												&& (lastdug==null || !lastdug.equals(new Coord(j, i))))
-										{
+												&& (lastdug == null || !lastdug.equals(new Coord(j, i)))) {
 											closest = new Coord(j, i);
-											lastdug=closest;
+											lastdug = closest;
 										}
 									}
 								robot.action = Action.dig(closest);
@@ -292,12 +291,12 @@ class Player {
 								robot.action = Action.move(new Coord(board.width / 2, board.height / 2));
 						}
 					}
-	
+
 					else if (robot.id == idRobotRadar && robot.item == EntityType.RADAR)
 						robot.action = Action.dig(support.thinkRadar());
 					else if (robot.id == idRobotTrap && robot.item == EntityType.TRAP)
 						robot.action = Action.dig(postrap);
-	
+
 					// robot.action = Action.none();
 					// robot.action.message = "Java Starter";
 				}
@@ -431,6 +430,10 @@ class Support {
 		int penalty = 0;
 		for (int i = 8; i > 4; i--) {
 			if (!finded[RIGHT] && board.cellExist(new Coord(c.x + i, c.y))) {
+				if (proximity(visited, 3, new Coord(c.x + i, c.y))) {
+					finded[RIGHT] = true;
+				}
+				else {
 				Coord e = new Coord(c.x + i, c.y);
 				finded[RIGHT] = true;
 				if ((best == null && tempRad.contains(e)) || tempRad.contains(e)) {
@@ -464,118 +467,132 @@ class Support {
 						}
 					}
 					;
-				}
+				}}
 			}
-			if (!finded[LEFT] && board.cellExist(new Coord(c.x - i, c.y))&&(c.x-i)!=0) {
-				Coord e = new Coord(c.x - i, c.y);
-				finded[LEFT] = true;
-				if ((best == null && tempRad.contains(e)) || tempRad.contains(e)) {
-					if (!visited.contains(e)) {
-						search.add(e);
-					}
-				} else if (best == null) {
-					best = e;
-					promise = countOre(c)[LEFT];
-					penalty = calculateVisible(e);
+			if (!finded[LEFT] && board.cellExist(new Coord(c.x - i, c.y)) && (c.x - i) != 0) {
+				if (proximity(visited, 3, new Coord(c.x - i, c.y))) {
+					finded[LEFT] = true;
 				} else {
-					if ((promise * 3 - penalty) - (countOre(c)[LEFT] * 3 - calculateVisible(e)) < 0) {
+					Coord e = new Coord(c.x - i, c.y);
+					finded[LEFT] = true;
+					if ((best == null && tempRad.contains(e)) || tempRad.contains(e)) {
+						if (!visited.contains(e)) {
+							search.add(e);
+						}
+					} else if (best == null) {
 						best = e;
 						promise = countOre(c)[LEFT];
 						penalty = calculateVisible(e);
-					}
-				}
-				if (memory[0] == null) {
-					if (tempRad.contains(e)) {
-						memory[0] = e;
-						memory[1] = -1;
 					} else {
-						memory[0] = e;
-						memory[1] = countOre(c)[LEFT] * 3 - calculateVisible(e);
+						if ((promise * 3 - penalty) - (countOre(c)[LEFT] * 3 - calculateVisible(e)) < 0) {
+							best = e;
+							promise = countOre(c)[LEFT];
+							penalty = calculateVisible(e);
+						}
 					}
-				} else {
-					if (!tempRad.contains(e)) {
-						if ((Integer) memory[1] - countOre(c)[LEFT] * 3 - calculateVisible(e) < 0) {
+					if (memory[0] == null) {
+						if (tempRad.contains(e)) {
+							memory[0] = e;
+							memory[1] = -1;
+						} else {
 							memory[0] = e;
 							memory[1] = countOre(c)[LEFT] * 3 - calculateVisible(e);
 						}
+					} else {
+						if (!tempRad.contains(e)) {
+							if ((Integer) memory[1] - countOre(c)[LEFT] * 3 - calculateVisible(e) < 0) {
+								memory[0] = e;
+								memory[1] = countOre(c)[LEFT] * 3 - calculateVisible(e);
+							}
+						}
+						;
 					}
-					;
 				}
 			}
 			if (!finded[UP] && board.cellExist(new Coord(c.x, c.y - i))) {
-				Coord e = new Coord(c.x, c.y - i);
-				finded[UP] = true;
-				if ((best == null && tempRad.contains(e)) || tempRad.contains(e)) {
-					if (!visited.contains(e)) {
-						search.add(e);
-					}
-				} else if (best == null) {
-					best = e;
-					promise = countOre(c)[UP];
-					penalty = calculateVisible(e);
+				if (proximity(visited, 3, new Coord(c.x, c.y - i))) {
+					finded[UP] = true;
 				} else {
-					if ((promise * 3 - penalty) - (countOre(c)[UP] * 3 - calculateVisible(e)) < 0) {
+					Coord e = new Coord(c.x, c.y - i);
+					finded[UP] = true;
+					if ((best == null && tempRad.contains(e)) || tempRad.contains(e)) {
+						if (!visited.contains(e)) {
+							search.add(e);
+						}
+					} else if (best == null) {
 						best = e;
 						promise = countOre(c)[UP];
 						penalty = calculateVisible(e);
-					}
-				}
-				if (memory[0] == null) {
-					if (tempRad.contains(e)) {
-						memory[0] = e;
-						memory[1] = -1;
 					} else {
-						memory[0] = e;
-						memory[1] = countOre(c)[UP] * 3 - calculateVisible(e);
+						if ((promise * 3 - penalty) - (countOre(c)[UP] * 3 - calculateVisible(e)) < 0) {
+							best = e;
+							promise = countOre(c)[UP];
+							penalty = calculateVisible(e);
+						}
 					}
-				} else {
-					if (!tempRad.contains(e)) {
-						if ((Integer) memory[1] - countOre(c)[UP] * 3 - calculateVisible(e) < 0) {
+					if (memory[0] == null) {
+						if (tempRad.contains(e)) {
+							memory[0] = e;
+							memory[1] = -1;
+						} else {
 							memory[0] = e;
 							memory[1] = countOre(c)[UP] * 3 - calculateVisible(e);
 						}
+					} else {
+						if (!tempRad.contains(e)) {
+							if ((Integer) memory[1] - countOre(c)[UP] * 3 - calculateVisible(e) < 0) {
+								memory[0] = e;
+								memory[1] = countOre(c)[UP] * 3 - calculateVisible(e);
+							}
+						}
+						;
 					}
-					;
 				}
 			}
 			if (!finded[DOWN] && board.cellExist(new Coord(c.x, c.y + i))) {
-				Coord e = new Coord(c.x, c.y + i);
-				finded[DOWN] = true;
-				if ((best == null && tempRad.contains(e)) || tempRad.contains(e)) {
-					if (!visited.contains(e)) {
-						search.add(e);
-					}
-				} else if (best == null) {
-					best = e;
-					promise = countOre(c)[DOWN];
-					penalty = calculateVisible(e);
+				if (proximity(visited, 3, new Coord(c.x, c.y + i))) {
+					finded[DOWN] = true;
 				} else {
-					if ((promise * 3 - penalty) - (countOre(c)[DOWN] * 3 - calculateVisible(e)) < 0) {
+					Coord e = new Coord(c.x, c.y + i);
+					finded[DOWN] = true;
+					if ((best == null && tempRad.contains(e)) || tempRad.contains(e)) {
+						if (!visited.contains(e)) {
+							search.add(e);
+						}
+					} else if (best == null) {
 						best = e;
 						promise = countOre(c)[DOWN];
 						penalty = calculateVisible(e);
-					}
-				}
-				if (memory[0] == null) {
-					if (tempRad.contains(e)) {
-						memory[0] = e;
-						memory[1] = -1;
 					} else {
-						memory[0] = e;
-						memory[1] = countOre(c)[DOWN] * 3 - calculateVisible(e);
+						if ((promise * 3 - penalty) - (countOre(c)[DOWN] * 3 - calculateVisible(e)) < 0) {
+							best = e;
+							promise = countOre(c)[DOWN];
+							penalty = calculateVisible(e);
+						}
 					}
-				} else {
-					if (!tempRad.contains(e)) {
-						if ((Integer) memory[1] - countOre(c)[DOWN] * 3 - calculateVisible(e) < 0) {
+					if (memory[0] == null) {
+						if (tempRad.contains(e)) {
+							memory[0] = e;
+							memory[1] = -1;
+						} else {
 							memory[0] = e;
 							memory[1] = countOre(c)[DOWN] * 3 - calculateVisible(e);
 						}
+					} else {
+						if (!tempRad.contains(e)) {
+							if ((Integer) memory[1] - countOre(c)[DOWN] * 3 - calculateVisible(e) < 0) {
+								memory[0] = e;
+								memory[1] = countOre(c)[DOWN] * 3 - calculateVisible(e);
+							}
+						}
+						;
 					}
-					;
 				}
 			}
 		}
-		while (search.size() > 0) {
+		while (search.size() > 0)
+
+		{
 			Coord s = search.remove(0);
 			findPosRec(s, visited, memory);
 		}
@@ -638,4 +655,17 @@ class Support {
 		}
 		return best;
 	}
+
+	private boolean proximity(ArrayList<Coord> visited, int range, Coord c) {
+		for (int i = 1; i < range; i++) {
+			if (visited.contains(new Coord(c.x + 1, c.y)) || visited.contains(new Coord(c.x - i, c.y))
+					|| visited.contains(new Coord(c.x, c.y - i)) || visited.contains(new Coord(c.x, c.y + i))
+					|| visited.contains(new Coord(c.x - i, c.y - i)) || visited.contains(new Coord(c.x - i, c.y + i))
+					|| visited.contains(new Coord(c.x + i, c.y + i)) || visited.contains(new Coord(c.x + i, c.y - i))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }
