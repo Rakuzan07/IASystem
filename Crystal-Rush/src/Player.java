@@ -241,6 +241,7 @@ class Player {
 		Board board = new Board(in);
 		Support support = new Support(board);
 		Coord postrap=null;
+		Coord lastdug=null;
 		while (true) {
 			// Parse current state of the game
 			board.update(in);
@@ -279,8 +280,12 @@ class Player {
 								for (int i = 0; i < board.height; i++)
 									for (int j = 0; j < board.width; j++) {
 										if (support.coveredByRadar[i][j] && board.getCell(new Coord(j, i)).ore > 0
-												&& robot.pos.distance(new Coord(j, i)) < robot.pos.distance(closest))
+												&& robot.pos.distance(new Coord(j, i)) < robot.pos.distance(closest)
+												&& (lastdug==null || !lastdug.equals(new Coord(j, i))))
+										{
 											closest = new Coord(j, i);
+											lastdug=closest;
+										}
 									}
 								robot.action = Action.dig(closest);
 							} else
