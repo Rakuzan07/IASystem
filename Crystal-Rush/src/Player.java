@@ -466,7 +466,7 @@ class Support {
 					;
 				}
 			}
-			if (!finded[LEFT] && board.cellExist(new Coord(c.x - i, c.y))&&c.x!=0) {
+			if (!finded[LEFT] && board.cellExist(new Coord(c.x - i, c.y))&&(c.x-i)!=0) {
 				Coord e = new Coord(c.x - i, c.y);
 				finded[LEFT] = true;
 				if ((best == null && tempRad.contains(e)) || tempRad.contains(e)) {
