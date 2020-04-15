@@ -275,7 +275,7 @@ class Player {
 					} else if (board.myTrapCooldown == 0 && idRobotTrap == -1 && robot.id != idRobotRadar) {
 						robot.action = Action.request(EntityType.TRAP);
 						idRobotTrap = robot.id;
-						postrap = support.estimate((ArrayList<Entity>) board.opponentTeam.robots);
+						postrap = support.estimate();
 					}
 					if (idRobotRadar != robot.id && idRobotTrap != robot.id) {
 
@@ -639,6 +639,15 @@ class Support {
 			return findPos();
 		}
 
+	}
+	
+	public Coord estimate() {
+		for(int j=1;j<board.width;j++) {
+			for(int i=0;i<board.height;i++) {
+				if(board.getCell(new Coord(j,i)).ore>0&&!board.myRadarPos.contains(new Coord(j,i))) return new Coord(j,i);
+			}
+		}
+		return null;
 	}
 
 	public Coord estimate(ArrayList<Entity> enemy) {
