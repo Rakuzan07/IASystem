@@ -245,7 +245,21 @@ class Player {
 		while (true) {
 			// Parse current state of the game
 			board.update(in);
-
+			
+			Coord[] radars = board.myRadarPos.toArray(new Coord[0]);
+			support.constructRadarBoard();
+			for (int i = 0; i < radars.length; i++)
+				support.updateRadarBoard(radars[i]);
+			
+			double percentage;
+			double tot=board.width*board.height;
+			double pos=0.0;
+			for (int i = 0; i < board.height; i++)
+				for (int j = 0; j < board.width; j++)
+					if(support.coveredByRadar[i][j])
+						pos++;
+			percentage=pos/tot;
+			
 			// Insert your strategy here
 			for (Entity robot : board.myTeam.robots) {
 
@@ -268,12 +282,8 @@ class Player {
 						if (robot.item == EntityType.AMADEUSIUM)
 							robot.action = Action.move(new Coord(0, robot.pos.y));
 						else {
-							Coord[] radars = board.myRadarPos.toArray(new Coord[0]);
-							support.constructRadarBoard();
+							
 							if (radars.length > 0) {
-
-								for (int i = 0; i < radars.length; i++)
-									support.updateRadarBoard(radars[i]);
 
 								Coord closest = new Coord(100, 100);
 
@@ -301,7 +311,7 @@ class Player {
 					// robot.action.message = "Java Starter";
 				}
 			} // FINE FOR
-
+			System.err.print(percentage);
 			// Send your actions for this turn
 			for (Entity robot : board.myTeam.robots) {
 				if (robot.action != null)
