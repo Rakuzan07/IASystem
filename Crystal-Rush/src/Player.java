@@ -388,25 +388,25 @@ class Support {
 		int[] ore = new int[RANGE];
 		for (int i = 0; i < RANGE; i++) {
 			for (int j = 0; j <= RANGE - i; j++) {
-				if (board.cellExist(new Coord(c.x + j, c.y - i)) && coveredByRadar[c.y - i][c.x + j])
+				if (board.cellExist(new Coord(c.x + j, c.y - i)) && coveredByRadar[c.y - i][c.x + j] && board.getCell(new Coord(c.x + j, c.y - i)).ore>0)
 					ore[UP]++;
-				if (board.cellExist(new Coord(c.x - j, c.y - i)) && coveredByRadar[c.y - i][c.x - j])
+				if (board.cellExist(new Coord(c.x - j, c.y - i)) && coveredByRadar[c.y - i][c.x - j] && board.getCell(new Coord(c.x - j, c.y - i)).ore>0)
 					ore[UP]++;
-				if (board.cellExist(new Coord(c.x + j, c.y + i)) && coveredByRadar[c.y + i][c.x + j])
+				if (board.cellExist(new Coord(c.x + j, c.y + i)) && coveredByRadar[c.y + i][c.x + j] && board.getCell(new Coord(c.x + j, c.y + i)).ore>0)
 					ore[DOWN]++;
-				if (board.cellExist(new Coord(c.x - j, c.y + i)) && coveredByRadar[c.y + i][c.x - j])
+				if (board.cellExist(new Coord(c.x - j, c.y + i)) && coveredByRadar[c.y + i][c.x - j] && board.getCell(new Coord(c.x - j, c.y + i)).ore>0)
 					ore[DOWN]++;
 			}
 		}
 		for (int i = 0; i < RANGE; i++) {
 			for (int j = 0; j <= RANGE - i; j++) {
-				if (board.cellExist(new Coord(c.x + i, c.y + j)) && coveredByRadar[c.y + j][c.x + i])
+				if (board.cellExist(new Coord(c.x + i, c.y + j)) && coveredByRadar[c.y + j][c.x + i] && board.getCell(new Coord(c.x + i, c.y + j)).ore>0)
 					ore[RIGHT]++;
-				if (board.cellExist(new Coord(c.x + i, c.y - j)) && coveredByRadar[c.y - j][c.x + i])
+				if (board.cellExist(new Coord(c.x + i, c.y - j)) && coveredByRadar[c.y - j][c.x + i] && board.getCell(new Coord(c.x + i, c.y - j)).ore>0)
 					ore[RIGHT]++;
-				if (board.cellExist(new Coord(c.x - i, c.y + j)) && coveredByRadar[c.y + j][c.x - i])
+				if (board.cellExist(new Coord(c.x - i, c.y + j)) && coveredByRadar[c.y + j][c.x - i] && board.getCell(new Coord(c.x - i, c.y + j)).ore>0)
 					ore[LEFT]++;
-				if (board.cellExist(new Coord(c.x - i, c.y - j)) && coveredByRadar[c.y - j][c.x - i])
+				if (board.cellExist(new Coord(c.x - i, c.y - j)) && coveredByRadar[c.y - j][c.x - i] && board.getCell(new Coord(c.x - i, c.y - j)).ore>0)
 					ore[LEFT]++;
 			}
 		}
