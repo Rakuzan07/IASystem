@@ -246,7 +246,7 @@ class Player {
 		while (true) {
 			// Parse current state of the game
 			board.update(in);
-			
+			postrap = support.estimate();
 			Coord[] radars = board.myRadarPos.toArray(new Coord[0]);
 			support.constructRadarBoard();
 			for (int i = 0; i < radars.length; i++)
@@ -298,20 +298,21 @@ class Player {
 									for (int j = 0; j < board.width; j++) {
 										if (support.coveredByRadar[i][j] && board.getCell(new Coord(j, i)).ore > 0
 												&& robot.pos.distance(new Coord(j, i)) < robot.pos.distance(closest)
-												&& (lastdug == null || !lastdug.equals(new Coord(j, i)))) {
+												&& (lastdug == null || !lastdug.equals(new Coord(j, i)))
+												&& !board.myTrapPos.contains(new Coord(j, i))) {
 											closest = new Coord(j, i);
 											lastdug = closest;
 										}
 									}
 								robot.action = Action.dig(closest);
 							} else
-								robot.action = Action.move(new Coord(board.width / 2, board.height / 2));
+								robot.action = Action.move(new Coord(15, 4));
 						}
 					}
 
 					else if (robot.id == idRobotRadar && robot.item == EntityType.RADAR)
 						robot.action = Action.dig(wheretodig);
-					else if (robot.id == idRobotTrap && robot.item == EntityType.TRAP)
+					else if (robot.id == idRobotTrap && robot.item == EntityType.TRAP &&postrap!=null)
 						robot.action = Action.dig(postrap);
 
 					// robot.action = Action.none();
@@ -651,7 +652,7 @@ class Support {
 	public Coord estimate() {
 		for(int j=1;j<board.width;j++) {
 			for(int i=0;i<board.height;i++) {
-				if(board.getCell(new Coord(j,i)).ore>0&&!board.myRadarPos.contains(new Coord(j,i))) return new Coord(j,i);
+				if(board.getCell(new Coord(j,i)).ore>1&&!board.myRadarPos.contains(new Coord(j,i))&&!board.myTrapPos.contains(new Coord(j,i))) return new Coord(j,i);
 			}
 		}
 		return null;
