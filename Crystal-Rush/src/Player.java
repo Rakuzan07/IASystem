@@ -634,6 +634,7 @@ class Support {
 	public Coord estimate(ArrayList<Entity> enemy) {
 		for (int i = 0; i < enemy.size(); i++) {
 			Coord c = enemy.get(i).pos;
+			if(enemy.get(i).isAlive()) {
 			forecastMatrix[c.y][c.x] = forecastMatrix[c.y][c.x] + 3;
 			if (board.cellExist(new Coord(c.x + 1, c.y)))
 				forecastMatrix[c.y][c.x + 1]++;
@@ -651,6 +652,7 @@ class Support {
 				forecastMatrix[c.y + 1][c.x + 1]++;
 			if (board.cellExist(new Coord(c.x - 1, c.y + 1)))
 				forecastMatrix[c.y + 1][c.x - 1]++;
+			}
 		}
 		Coord best = null;
 		int numVisit = 0;
