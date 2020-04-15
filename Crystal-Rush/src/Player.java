@@ -693,6 +693,7 @@ class Support {
 		if(radPos.isEmpty())
 			return new Coord(-1, -1);			
 		else
+			
 			return radPos.remove();
 		/*
 		ArrayList<Coord> radarCoord = (ArrayList<Coord>) board.myRadarPos;
