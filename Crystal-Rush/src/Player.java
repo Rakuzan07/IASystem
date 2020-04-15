@@ -4,7 +4,7 @@ import static java.lang.Math.*;
 import java.io.*;
 import java.nio.*;
 import java.util.*;
-
+import java.util.concurrent.LinkedBlockingQueue;
 class Coord {
 	final int x;
 	final int y;
@@ -303,7 +303,7 @@ class Player {
 					}
 
 					else if (robot.id == idRobotRadar && robot.item == EntityType.RADAR)
-						robot.action = Action.dig(support.thinkRadar());
+						robot.action = Action.dig(support.thinkRadar2());
 					else if (robot.id == idRobotTrap && robot.item == EntityType.TRAP)
 						robot.action = Action.dig(postrap);
 
@@ -333,12 +333,22 @@ class Support {
 	Board board;
 	boolean[][] coveredByRadar;
 	int[][] forecastMatrix;
+	Queue<Coord> radPos;
 	private static final int RANGE = 4, UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3;
 
 	public Support(Board b) {
 		board = b;
 		coveredByRadar = new boolean[b.height][b.width];
 		forecastMatrix = new int[b.height][b.width];
+			radPos=new LinkedBlockingQueue<Coord>();
+		Coord x=new Coord(15,4);
+		radPos.add(x);
+		x=new Coord(15,10);
+		radPos.add(x);
+		x=new Coord(25,4);
+		radPos.add(x);
+		x= new Coord(25,10);
+		radPos.add(x);
 	}
 
 	public void constructRadarBoard() {
@@ -680,6 +690,7 @@ class Support {
 		}
 		return false;
 	}
+
 	
 	private Coord bestCoord(ArrayList<Coord> ps) {
 		Coord best=null;
@@ -692,4 +703,29 @@ class Support {
 		return best;
 	}
 
+
+	public Coord thinkRadar2() {
+		
+		if(radPos.isEmpty())
+			return new Coord(-1, -1);			
+		else
+			
+			return radPos.remove();
+		/*
+		ArrayList<Coord> radarCoord = (ArrayList<Coord>) board.myRadarPos;
+		if (radarCoord.size() == 0) {
+			// Il primo radar viene posizionato in una posizione centrale nella mappa
+			int height = board.height;
+			int width = board.width;
+			return new Coord(width / 2, height / 2);
+		} else {
+			// C'è almeno un radar nella mappa che usiamo come punto di riferimento
+			return findPos();
+		}
+		*/
+		
+	}
+
 }
+
+
