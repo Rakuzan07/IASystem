@@ -612,7 +612,7 @@ class Support {
 	}
 
 	public Coord findPos() {
-		Coord c = ((ArrayList<Coord>) board.myRadarPos).get(0);
+		Coord c = bestCoord((ArrayList<Coord>)board.myRadarPos);
 		Object[] memory = new Object[2];
 		return findPosRec(c, new ArrayList<Coord>(), memory);
 	}
@@ -679,6 +679,17 @@ class Support {
 			}
 		}
 		return false;
+	}
+	
+	private Coord bestCoord(ArrayList<Coord> ps) {
+		Coord best=null;
+		for(int i=0;i<ps.size();i++) {
+			if(best==null) best=ps.get(i);
+			else if ((countOre(best)[UP]+countOre(best)[DOWN]+countOre(best)[RIGHT]+countOre(best)[LEFT])-(countOre(ps.get(i))[UP]+countOre(ps.get(i))[DOWN]+countOre(ps.get(i))[RIGHT]+countOre(ps.get(i))[LEFT])<0) {
+				best=ps.get(i);
+			}
+		}
+		return best;
 	}
 
 }
