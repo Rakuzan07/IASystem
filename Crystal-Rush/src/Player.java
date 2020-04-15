@@ -242,6 +242,7 @@ class Player {
 		Support support = new Support(board);
 		Coord postrap = null;
 		Coord lastdug = null;
+		Coord wheretodig = support.thinkRadar2();;
 		while (true) {
 			// Parse current state of the game
 			board.update(in);
@@ -250,7 +251,7 @@ class Player {
 			support.constructRadarBoard();
 			for (int i = 0; i < radars.length; i++)
 				support.updateRadarBoard(radars[i]);
-			
+			/*
 			double percentage;
 			double tot=board.width*board.height;
 			double pos=0.0;
@@ -259,7 +260,7 @@ class Player {
 					if(support.coveredByRadar[i][j])
 						pos++;
 			percentage=pos/tot;
-			
+			*/
 			// Insert your strategy here
 			for (Entity robot : board.myTeam.robots) {
 
@@ -270,8 +271,14 @@ class Player {
 					if (robot.item != EntityType.TRAP && robot.id == idRobotTrap)
 						idRobotTrap = -1;
 					if (board.myRadarCooldown == 0 && idRobotRadar == -1 && robot.id != idRobotTrap) {
-						robot.action = Action.request(EntityType.RADAR);
-						idRobotRadar = robot.id;
+						if(board.myRadarPos.contains(wheretodig)) {
+							wheretodig=support.thinkRadar2();
+						}
+							if(!wheretodig.equals(new Coord(-1,-1))) {
+								robot.action = Action.request(EntityType.RADAR);
+								idRobotRadar = robot.id;
+							}
+							
 					} else if (board.myTrapCooldown == 0 && idRobotTrap == -1 && robot.id != idRobotRadar) {
 						robot.action = Action.request(EntityType.TRAP);
 						idRobotTrap = robot.id;
@@ -303,7 +310,7 @@ class Player {
 					}
 
 					else if (robot.id == idRobotRadar && robot.item == EntityType.RADAR)
-						robot.action = Action.dig(support.thinkRadar2());
+						robot.action = Action.dig(wheretodig);
 					else if (robot.id == idRobotTrap && robot.item == EntityType.TRAP)
 						robot.action = Action.dig(postrap);
 
@@ -311,7 +318,7 @@ class Player {
 					// robot.action.message = "Java Starter";
 				}
 			} // FINE FOR
-			System.err.print(percentage);
+			System.err.print(wheretodig);
 			// Send your actions for this turn
 			for (Entity robot : board.myTeam.robots) {
 				if (robot.action != null)
@@ -720,19 +727,7 @@ class Support {
 		else
 			
 			return radPos.remove();
-		/*
-		ArrayList<Coord> radarCoord = (ArrayList<Coord>) board.myRadarPos;
-		if (radarCoord.size() == 0) {
-			// Il primo radar viene posizionato in una posizione centrale nella mappa
-			int height = board.height;
-			int width = board.width;
-			return new Coord(width / 2, height / 2);
-		} else {
-			// C'è almeno un radar nella mappa che usiamo come punto di riferimento
-			return findPos();
-		}
-		*/
-		
+
 	}
 
 }
