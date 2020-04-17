@@ -342,6 +342,7 @@ class Support {
 	boolean[][] coveredByRadar;
 	int[][] forecastMatrix;
 	Queue<Coord> radPos;
+	ArrayList<Coord> totRadPos;
 	private static final int RANGE = 4, UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3;
 
 	public Support(Board b) {
@@ -349,14 +350,19 @@ class Support {
 		coveredByRadar = new boolean[b.height][b.width];
 		forecastMatrix = new int[b.height][b.width];
 			radPos=new LinkedBlockingQueue<Coord>();
+			totRadPos=new ArrayList<Coord>();
 		Coord x=new Coord(15,4);
 		radPos.add(x);
+		totRadPos.add(x);
 		x=new Coord(15,10);
 		radPos.add(x);
+		totRadPos.add(x);
 		x=new Coord(25,4);
 		radPos.add(x);
+		totRadPos.add(x);
 		x= new Coord(25,10);
 		radPos.add(x);
+		totRadPos.add(x);
 	}
 
 	public void constructRadarBoard() {
@@ -722,7 +728,15 @@ class Support {
 
 
 	public Coord thinkRadar2() {
-		
+		ArrayList<Coord> updatedRadarPos=(ArrayList<Coord>) board.myRadarPos;
+		if(radPos.isEmpty()) {
+			for(int i=0;i<totRadPos.size();i++) {
+				if(!updatedRadarPos.contains(totRadPos.get(i))) {
+					radPos.add(totRadPos.get(i));
+					break;
+				}
+			}
+		}
 		if(radPos.isEmpty())
 			return new Coord(-1, -1);			
 		else
