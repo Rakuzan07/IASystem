@@ -276,7 +276,8 @@ class Player {
 							idRobotRadar = robot.id;
 						}
 
-					} else if (board.myTrapCooldown == 0 && idRobotTrap == -1 && robot.id != idRobotRadar) {
+					}
+					if (board.myTrapCooldown == 0 && idRobotTrap == -1 && robot.id != idRobotRadar) {
 						robot.action = Action.request(EntityType.TRAP);
 						idRobotTrap = robot.id;
 						postrap = support.estimate();
