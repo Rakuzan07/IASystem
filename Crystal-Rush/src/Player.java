@@ -5,6 +5,7 @@ import java.io.*;
 import java.nio.*;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
+
 class Coord {
 	final int x;
 	final int y;
@@ -242,7 +243,8 @@ class Player {
 		Support support = new Support(board);
 		Coord postrap = null;
 		Coord lastdug = null;
-		Coord wheretodig = support.thinkRadar2();;
+		Coord wheretodig = support.thinkRadar2();
+		;
 		while (true) {
 			// Parse current state of the game
 			board.update(in);
@@ -252,15 +254,10 @@ class Player {
 			for (int i = 0; i < radars.length; i++)
 				support.updateRadarBoard(radars[i]);
 			/*
-			double percentage;
-			double tot=board.width*board.height;
-			double pos=0.0;
-			for (int i = 0; i < board.height; i++)
-				for (int j = 0; j < board.width; j++)
-					if(support.coveredByRadar[i][j])
-						pos++;
-			percentage=pos/tot;
-			*/
+			 * double percentage; double tot=board.width*board.height; double pos=0.0; for
+			 * (int i = 0; i < board.height; i++) for (int j = 0; j < board.width; j++)
+			 * if(support.coveredByRadar[i][j]) pos++; percentage=pos/tot;
+			 */
 			// Insert your strategy here
 			for (Entity robot : board.myTeam.robots) {
 
@@ -271,15 +268,16 @@ class Player {
 					if (robot.item != EntityType.TRAP && robot.id == idRobotTrap)
 						idRobotTrap = -1;
 					if (board.myRadarCooldown == 0 && idRobotRadar == -1 && robot.id != idRobotTrap) {
-						if(board.myRadarPos.contains(wheretodig)) {
-							wheretodig=support.thinkRadar2();
+						if (board.myRadarPos.contains(wheretodig)) {
+							wheretodig = support.thinkRadar2();
 						}
-							if(!wheretodig.equals(new Coord(-1,-1))) {
-								robot.action = Action.request(EntityType.RADAR);
-								idRobotRadar = robot.id;
-							}
-							
-					} if (board.myTrapCooldown == 0 && idRobotTrap == -1 && robot.id != idRobotRadar) {
+						if (!wheretodig.equals(new Coord(-1, -1))) {
+							robot.action = Action.request(EntityType.RADAR);
+							idRobotRadar = robot.id;
+						}
+
+					}
+					if (board.myTrapCooldown == 0 && idRobotTrap == -1 && robot.id != idRobotRadar) {
 						robot.action = Action.request(EntityType.TRAP);
 						idRobotTrap = robot.id;
 						postrap = support.estimate();
@@ -289,7 +287,7 @@ class Player {
 						if (robot.item == EntityType.AMADEUSIUM)
 							robot.action = Action.move(new Coord(0, robot.pos.y));
 						else {
-							
+
 							if (radars.length > 0) {
 
 								Coord closest = new Coord(100, 100);
@@ -306,18 +304,22 @@ class Player {
 									}
 								robot.action = Action.dig(closest);
 							} else
-								robot.action = Action.move(new Coord(15, 4));
+								robot.action = Action.move(new Coord(9, 4));
 						}
 					}
 
 					else if (robot.id == idRobotRadar && robot.item == EntityType.RADAR)
 						robot.action = Action.dig(wheretodig);
-					else if (robot.id == idRobotTrap && robot.item == EntityType.TRAP &&postrap!=null)
+					else if (robot.id == idRobotTrap && robot.item == EntityType.TRAP && postrap != null)
 						robot.action = Action.dig(postrap);
 
 					// robot.action = Action.none();
 					// robot.action.message = "Java Starter";
-				}
+				} // fine if
+				else if (robot.id == idRobotRadar)
+					idRobotRadar = -1;
+				else if (robot.id == idRobotTrap)
+					idRobotTrap = -1;
 			} // FINE FOR
 			System.err.print(wheretodig);
 			// Send your actions for this turn
@@ -342,24 +344,55 @@ class Support {
 	boolean[][] coveredByRadar;
 	int[][] forecastMatrix;
 	Queue<Coord> radPos;
-	LinkedList<Coord> myDig,enemyDig;
+	ArrayList<Coord> totRadPos;
+	LinkedList<Coord> myDig, enemyDig;
+
 	private static final int RANGE = 4, UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3;
 
 	public Support(Board b) {
 		board = b;
-		myDig=new LinkedList<Coord>();
-		enemyDig=new LinkedList<Coord>();
+		myDig = new LinkedList<Coord>();
+		enemyDig = new LinkedList<Coord>();
 		coveredByRadar = new boolean[b.height][b.width];
 		forecastMatrix = new int[b.height][b.width];
-			radPos=new LinkedBlockingQueue<Coord>();
-		Coord x=new Coord(15,4);
+		radPos = new LinkedBlockingQueue<Coord>();
+        totRadPos=new ArrayList<Coord>();
+		
+        Coord x = new Coord(9, 4);
+
 		radPos.add(x);
-		x=new Coord(15,10);
+		totRadPos.add(x);
+		
+		x = new Coord(15, 10);
 		radPos.add(x);
-		x=new Coord(25,4);
+		totRadPos.add(x);
+		
+		x = new Coord(9, 10);
+
 		radPos.add(x);
-		x= new Coord(25,10);
+		totRadPos.add(x);
+        
+		x = new Coord(25, 4);
 		radPos.add(x);
+		totRadPos.add(x);
+		
+		x = new Coord(17, 4);
+		radPos.add(x);
+		totRadPos.add(x);
+
+		x = new Coord(25, 10);
+		radPos.add(x);
+		totRadPos.add(x);
+		
+		x = new Coord(17, 10);
+		radPos.add(x);
+		totRadPos.add(x);
+
+		x = new Coord(25, 4);
+		radPos.add(x);
+		totRadPos.add(x);
+		
+
 	}
 
 	public void constructRadarBoard() {
@@ -409,25 +442,25 @@ class Support {
 		int[] ore = new int[RANGE];
 		for (int i = 0; i < RANGE; i++) {
 			for (int j = 0; j <= RANGE - i; j++) {
-				if (board.cellExist(new Coord(c.x + j, c.y - i)) &&  board.getCell(new Coord(c.x + j, c.y - i)).ore>0)
+				if (board.cellExist(new Coord(c.x + j, c.y - i)) && board.getCell(new Coord(c.x + j, c.y - i)).ore > 0)
 					ore[UP]++;
-				if (board.cellExist(new Coord(c.x - j, c.y - i)) &&  board.getCell(new Coord(c.x - j, c.y - i)).ore>0)
+				if (board.cellExist(new Coord(c.x - j, c.y - i)) && board.getCell(new Coord(c.x - j, c.y - i)).ore > 0)
 					ore[UP]++;
-				if (board.cellExist(new Coord(c.x + j, c.y + i)) &&  board.getCell(new Coord(c.x + j, c.y + i)).ore>0)
+				if (board.cellExist(new Coord(c.x + j, c.y + i)) && board.getCell(new Coord(c.x + j, c.y + i)).ore > 0)
 					ore[DOWN]++;
-				if (board.cellExist(new Coord(c.x - j, c.y + i)) &&  board.getCell(new Coord(c.x - j, c.y + i)).ore>0)
+				if (board.cellExist(new Coord(c.x - j, c.y + i)) && board.getCell(new Coord(c.x - j, c.y + i)).ore > 0)
 					ore[DOWN]++;
 			}
 		}
 		for (int i = 0; i < RANGE; i++) {
 			for (int j = 0; j <= RANGE - i; j++) {
-				if (board.cellExist(new Coord(c.x + i, c.y + j)) &&  board.getCell(new Coord(c.x + i, c.y + j)).ore>0)
+				if (board.cellExist(new Coord(c.x + i, c.y + j)) && board.getCell(new Coord(c.x + i, c.y + j)).ore > 0)
 					ore[RIGHT]++;
-				if (board.cellExist(new Coord(c.x + i, c.y - j)) && board.getCell(new Coord(c.x + i, c.y - j)).ore>0)
+				if (board.cellExist(new Coord(c.x + i, c.y - j)) && board.getCell(new Coord(c.x + i, c.y - j)).ore > 0)
 					ore[RIGHT]++;
-				if (board.cellExist(new Coord(c.x - i, c.y + j)) &&  board.getCell(new Coord(c.x - i, c.y + j)).ore>0)
+				if (board.cellExist(new Coord(c.x - i, c.y + j)) && board.getCell(new Coord(c.x - i, c.y + j)).ore > 0)
 					ore[LEFT]++;
-				if (board.cellExist(new Coord(c.x - i, c.y - j)) &&  board.getCell(new Coord(c.x - i, c.y - j)).ore>0)
+				if (board.cellExist(new Coord(c.x - i, c.y - j)) && board.getCell(new Coord(c.x - i, c.y - j)).ore > 0)
 					ore[LEFT]++;
 			}
 		}
@@ -463,45 +496,45 @@ class Support {
 			if (!finded[RIGHT] && board.cellExist(new Coord(c.x + i, c.y))) {
 				if (proximity(3, new Coord(c.x + i, c.y))) {
 					finded[RIGHT] = true;
-				}
-				else {
-				Coord e = new Coord(c.x + i, c.y);
-				finded[RIGHT] = true;
-				if ((best == null && tempRad.contains(e)) || tempRad.contains(e)) {
-					if (!visited.contains(e)) {
-						search.add(e);
-					}
-				} else if (best == null) {
-					best = e;
-					promise = countOre(c)[RIGHT];
-					penalty = calculateVisible(e);
 				} else {
-					if ((promise * 3 - penalty) - (countOre(c)[RIGHT] * 3 - calculateVisible(e)) < 0) {
+					Coord e = new Coord(c.x + i, c.y);
+					finded[RIGHT] = true;
+					if ((best == null && tempRad.contains(e)) || tempRad.contains(e)) {
+						if (!visited.contains(e)) {
+							search.add(e);
+						}
+					} else if (best == null) {
 						best = e;
 						promise = countOre(c)[RIGHT];
 						penalty = calculateVisible(e);
-					}
-				}
-				if (memory[0] == null) {
-					if (tempRad.contains(e)) {
-						memory[0] = e;
-						memory[1] = -1;
 					} else {
-						memory[0] = e;
-						memory[1] = countOre(c)[RIGHT] * 3 - calculateVisible(e);
+						if ((promise * 3 - penalty) - (countOre(c)[RIGHT] * 3 - calculateVisible(e)) < 0) {
+							best = e;
+							promise = countOre(c)[RIGHT];
+							penalty = calculateVisible(e);
+						}
 					}
-				} else {
-					if (!tempRad.contains(e)) {
-						if ((Integer) memory[1] - countOre(c)[RIGHT] * 3 - calculateVisible(e) < 0) {
+					if (memory[0] == null) {
+						if (tempRad.contains(e)) {
+							memory[0] = e;
+							memory[1] = -1;
+						} else {
 							memory[0] = e;
 							memory[1] = countOre(c)[RIGHT] * 3 - calculateVisible(e);
 						}
+					} else {
+						if (!tempRad.contains(e)) {
+							if ((Integer) memory[1] - countOre(c)[RIGHT] * 3 - calculateVisible(e) < 0) {
+								memory[0] = e;
+								memory[1] = countOre(c)[RIGHT] * 3 - calculateVisible(e);
+							}
+						}
+						;
 					}
-					;
-				}}
+				}
 			}
 			if (!finded[LEFT] && board.cellExist(new Coord(c.x - i, c.y)) && (c.x - i) != 0) {
-				if (proximity( 3, new Coord(c.x - i, c.y))) {
+				if (proximity(3, new Coord(c.x - i, c.y))) {
 					finded[LEFT] = true;
 				} else {
 					Coord e = new Coord(c.x - i, c.y);
@@ -633,7 +666,7 @@ class Support {
 	}
 
 	public Coord findPos() {
-		Coord c = bestCoord((ArrayList<Coord>)board.myRadarPos);
+		Coord c = bestCoord((ArrayList<Coord>) board.myRadarPos);
 		Object[] memory = new Object[2];
 		return findPosRec(c, new ArrayList<Coord>(), memory);
 	}
@@ -651,11 +684,13 @@ class Support {
 		}
 
 	}
-	
+
 	public Coord estimate() {
-		for(int j=1;j<board.width;j++) {
-			for(int i=0;i<board.height;i++) {
-				if(board.getCell(new Coord(j,i)).ore>1&&!board.myRadarPos.contains(new Coord(j,i))&&!board.myTrapPos.contains(new Coord(j,i))) return new Coord(j,i);
+		for (int j = 1; j < board.width; j++) {
+			for (int i = 0; i < board.height; i++) {
+				if (board.getCell(new Coord(j, i)).ore > 1 && !board.myRadarPos.contains(new Coord(j, i))
+						&& !board.myTrapPos.contains(new Coord(j, i)))
+					return new Coord(j, i);
 			}
 		}
 		return null;
@@ -664,24 +699,24 @@ class Support {
 	public Coord estimate(ArrayList<Entity> enemy) {
 		for (int i = 0; i < enemy.size(); i++) {
 			Coord c = enemy.get(i).pos;
-			if(enemy.get(i).isAlive()) {
-			forecastMatrix[c.y][c.x] = forecastMatrix[c.y][c.x] + 3;
-			if (board.cellExist(new Coord(c.x + 1, c.y)))
-				forecastMatrix[c.y][c.x + 1]++;
-			if (board.cellExist(new Coord(c.x - 1, c.y)))
-				forecastMatrix[c.y][c.x - 1]++;
-			if (board.cellExist(new Coord(c.x, c.y + 1)))
-				forecastMatrix[c.y + 1][c.x]++;
-			if (board.cellExist(new Coord(c.x, c.y - 1)))
-				forecastMatrix[c.y - 1][c.x]++;
-			if (board.cellExist(new Coord(c.x - 1, c.y - 1)))
-				forecastMatrix[c.y - 1][c.x - 1]++;
-			if (board.cellExist(new Coord(c.x + 1, c.y - 1)))
-				forecastMatrix[c.y - 1][c.x + 1]++;
-			if (board.cellExist(new Coord(c.x + 1, c.y + 1)))
-				forecastMatrix[c.y + 1][c.x + 1]++;
-			if (board.cellExist(new Coord(c.x - 1, c.y + 1)))
-				forecastMatrix[c.y + 1][c.x - 1]++;
+			if (enemy.get(i).isAlive()) {
+				forecastMatrix[c.y][c.x] = forecastMatrix[c.y][c.x] + 3;
+				if (board.cellExist(new Coord(c.x + 1, c.y)))
+					forecastMatrix[c.y][c.x + 1]++;
+				if (board.cellExist(new Coord(c.x - 1, c.y)))
+					forecastMatrix[c.y][c.x - 1]++;
+				if (board.cellExist(new Coord(c.x, c.y + 1)))
+					forecastMatrix[c.y + 1][c.x]++;
+				if (board.cellExist(new Coord(c.x, c.y - 1)))
+					forecastMatrix[c.y - 1][c.x]++;
+				if (board.cellExist(new Coord(c.x - 1, c.y - 1)))
+					forecastMatrix[c.y - 1][c.x - 1]++;
+				if (board.cellExist(new Coord(c.x + 1, c.y - 1)))
+					forecastMatrix[c.y - 1][c.x + 1]++;
+				if (board.cellExist(new Coord(c.x + 1, c.y + 1)))
+					forecastMatrix[c.y + 1][c.x + 1]++;
+				if (board.cellExist(new Coord(c.x - 1, c.y + 1)))
+					forecastMatrix[c.y + 1][c.x - 1]++;
 			}
 		}
 		Coord best = null;
@@ -699,7 +734,7 @@ class Support {
 	}
 
 	private boolean proximity(int range, Coord c) {
-		ArrayList<Coord> ap=(ArrayList<Coord>) board.myRadarPos;
+		ArrayList<Coord> ap = (ArrayList<Coord>) board.myRadarPos;
 		for (int i = 1; i < range; i++) {
 			if (ap.contains(new Coord(c.x + 1, c.y)) || ap.contains(new Coord(c.x - i, c.y))
 					|| ap.contains(new Coord(c.x, c.y - i)) || ap.contains(new Coord(c.x, c.y + i))
@@ -711,54 +746,127 @@ class Support {
 		return false;
 	}
 
-	
 	private Coord bestCoord(ArrayList<Coord> ps) {
-		Coord best=null;
-		for(int i=0;i<ps.size();i++) {
-			if(best==null) best=ps.get(i);
-			else if ((countOre(best)[UP]+countOre(best)[DOWN]+countOre(best)[RIGHT]+countOre(best)[LEFT])-(countOre(ps.get(i))[UP]+countOre(ps.get(i))[DOWN]+countOre(ps.get(i))[RIGHT]+countOre(ps.get(i))[LEFT])<0) {
-				best=ps.get(i);
+		Coord best = null;
+		for (int i = 0; i < ps.size(); i++) {
+			if (best == null)
+				best = ps.get(i);
+			else if ((countOre(best)[UP] + countOre(best)[DOWN] + countOre(best)[RIGHT] + countOre(best)[LEFT])
+					- (countOre(ps.get(i))[UP] + countOre(ps.get(i))[DOWN] + countOre(ps.get(i))[RIGHT]
+							+ countOre(ps.get(i))[LEFT]) < 0) {
+				best = ps.get(i);
 			}
 		}
 		return best;
 	}
 
-
 	public Coord thinkRadar2() {
-		
-		if(radPos.isEmpty())
-			return new Coord(-1, -1);			
-		else
-			
-			return radPos.remove();
-
-	}
-	
-	public boolean checkHole(Coord c) {
-		if(myDig.contains(c)||!board.getCell(c).hole)return true;
-		return false;
-	}
-	
-	/*public Coord placeTrap() {
-		if(enemyDig.size()==0) {
-			for (int j = 1; j < board.width; j++) {
-				for (int i = 0; i < board.height; i++) {
-					if (board.getCell(new Coord(j, i)).known && board.getCell(new Coord(j, i)).ore > 0
-							&& !board.myTrapPos.contains(new Coord(j, i)) && !board.myRadarPos.contains(new Coord(j, i))
-							&& !alreadyDig.contains(new Coord(j, i))
-							&& (!board.getCell(new Coord(j, i)).hole || storyDig.contains(new Coord(j, i)))) {
-						check=true;
-					}
+		ArrayList<Coord> updatedRadarPos = (ArrayList<Coord>) board.myRadarPos;
+		if (radPos.isEmpty()) {
+			for (int i = 0; i < totRadPos.size(); i++) {
+				if (!updatedRadarPos.contains(totRadPos.get(i))) {
+					radPos.add(totRadPos.get(i));
+					break;
 				}
 			}
 		}
-	}*/
-	
+		if (radPos.isEmpty())
+			return new Coord(-1, -1);
+		else
+
+			return radPos.remove();
+	}
+
+	public boolean checkHole(Coord c) {
+		if (myDig.contains(c) || !board.getCell(c).hole)
+			return true;
+		return false;
+	}
+
+	public Coord placeTrap() {
+		if (enemyDig.size() == 0) {
+			for (int j = 1; j < board.width; j++) {
+				for (int i = 0; i < board.height; i++) {
+					if (board.getCell(new Coord(j, i)).hole && !myDig.contains(new Coord(j, i))
+							&& !board.myRadarPos.contains(new Coord(j, i))
+							&& !board.myTrapPos.contains(new Coord(j, i))) {
+						enemyDig.add(new Coord(j,i));
+					}
+				}
+			}
+			Coord best=null;
+			int distance=0;
+			for(int i=0;i<enemyDig.size();i++) {
+				if(best==null) {
+					best=enemyDig.get(i);
+					for(int j=0;j<enemyDig.size();j++) {
+						if(i!=j) {
+							distance=distance+enemyDig.get(j).distance(best);
+						}
+					}
+				}
+				else {
+					Coord tempBest=enemyDig.get(i);
+					int tempDistance=0;
+					for(int j=0;j<enemyDig.size();j++) {
+						if(i!=j) {
+							tempDistance=tempDistance+enemyDig.get(j).distance(tempBest);
+						}
+					}
+					if(distance>tempDistance) {
+						distance=tempDistance;
+						best=tempBest;
+					}
+				}
+			}
+			return best;
+		}
+		else {
+			LinkedList<Coord> tempEnemyDig=new LinkedList<Coord>();
+			for (int j = 1; j < board.width; j++) {
+				for (int i = 0; i < board.height; i++) {
+					if (board.getCell(new Coord(j, i)).hole && !myDig.contains(new Coord(j, i))
+							&& !board.myRadarPos.contains(new Coord(j, i))
+							&& !board.myTrapPos.contains(new Coord(j, i)) && !enemyDig.contains(new Coord(j,i))) {
+						tempEnemyDig.add(new Coord(j,i));
+					}
+				}
+			}
+			Coord best=null;
+			int distance=0;
+			for(int i=0;i<tempEnemyDig.size();i++) {
+				if(best==null) {
+					best=tempEnemyDig.get(i);
+					for(int j=0;j<tempEnemyDig.size();j++) {
+						if(i!=j) {
+							distance=distance+tempEnemyDig.get(j).distance(best);
+						}
+					}
+				}
+				else {
+					Coord tempBest=tempEnemyDig.get(i);
+					int tempDistance=0;
+					for(int j=0;j<tempEnemyDig.size();j++) {
+						if(i!=j) {
+							tempDistance=tempDistance+tempEnemyDig.get(j).distance(tempBest);
+						}
+					}
+					if(distance>tempDistance) {
+						distance=tempDistance;
+						best=tempBest;
+					}
+				}
+			}
+			for(int j=0;j<tempEnemyDig.size();j++) {
+				enemyDig.add(tempEnemyDig.get(j));
+			}
+			return best;
+		}
+	}
+
 	public void addHole(Coord c) {
-		if(!myDig.contains(c))myDig.add(c);
+		if (!myDig.contains(c))
+			myDig.add(c);
 	}
 
 }
-
-
-
