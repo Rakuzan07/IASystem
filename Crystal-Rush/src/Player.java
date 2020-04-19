@@ -245,6 +245,7 @@ class Player {
 		Coord lastdug = null;
 		Coord wheretodig = support.thinkRadar2();
 		;
+		
 		while (true) {
 			// Parse current state of the game
 			board.update(in);
@@ -284,8 +285,10 @@ class Player {
 					}
 					if (idRobotRadar != robot.id && idRobotTrap != robot.id) {
 
-						if (robot.item == EntityType.AMADEUSIUM)
+						if (robot.item == EntityType.AMADEUSIUM) {
 							robot.action = Action.move(new Coord(0, robot.pos.y));
+							support.addHole(support.getRobotPos(robot));
+						}
 						else {
 
 							if (radars.length > 0) {
@@ -307,7 +310,8 @@ class Player {
 								if(!closest.equals(new Coord(100, 100)))
 						    	{
 									robot.action = Action.dig(closest);
-									support.addHole(closest);
+									//support.addHole(closest);
+									support.addPos(robot, closest);
 									}
 							else
 							    robot.action = Action.dig(new Coord(15, 7));
@@ -354,7 +358,7 @@ class Support {
 	Queue<Coord> radPos;
 	ArrayList<Coord> totRadPos;
 	LinkedList<Coord> myDig, enemyDig;
-
+	HashMap<Integer,Coord> storyRobotPos=new HashMap<Integer,Coord>();
 	private static final int RANGE = 4, UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3;
 
 	public Support(Board b) {
@@ -869,6 +873,18 @@ class Support {
 	public void addHole(Coord c) {
 		if (!myDig.contains(c))
 			myDig.add(c);
+	}
+	
+	public void addPos(Entity e, Coord c) {
+		storyRobotPos.put(e.id, c);
+	}
+	
+	public void containsRobot(Entity e) {
+		storyRobotPos.containsKey(e.id);
+	}
+	
+	public Coord getRobotPos(Entity e){
+		return storyRobotPos.get(e.id);
 	}
 
 }
