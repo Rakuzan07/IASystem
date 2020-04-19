@@ -296,13 +296,21 @@ class Player {
 									for (int j = 0; j < board.width; j++) {
 										if (support.coveredByRadar[i][j] && board.getCell(new Coord(j, i)).ore > 0
 												&& robot.pos.distance(new Coord(j, i)) < robot.pos.distance(closest)
-												&& (lastdug == null || !lastdug.equals(new Coord(j, i)))
-												&& !board.myTrapPos.contains(new Coord(j, i))) {
+												//&& (lastdug == null || !lastdug.equals(new Coord(j, i)))
+												&& !board.myTrapPos.contains(new Coord(j, i))
+												&& support.checkHole(new Coord(j, i))) {
 											closest = new Coord(j, i);
-											lastdug = closest;
+											//lastdug = closest;
+											
 										}
 									}
-								robot.action = Action.dig(closest);
+								if(!closest.equals(new Coord(100, 100)))
+						    	{
+									robot.action = Action.dig(closest);
+									support.addHole(closest);
+									}
+							else
+							    robot.action = Action.dig(new Coord(15, 7));
 							} else
 								robot.action = Action.move(new Coord(9, 4));
 						}
@@ -358,37 +366,31 @@ class Support {
 		radPos = new LinkedBlockingQueue<Coord>();
         totRadPos=new ArrayList<Coord>();
 		
-        Coord x = new Coord(9, 4);
-
+    	Coord x = new Coord(4, 7);
 		radPos.add(x);
 		totRadPos.add(x);
 		
-		x = new Coord(15, 10);
+        x = new Coord(9, 4);
 		radPos.add(x);
 		totRadPos.add(x);
-		
+				
 		x = new Coord(9, 10);
-
-		radPos.add(x);
-		totRadPos.add(x);
-        
-		x = new Coord(25, 4);
 		radPos.add(x);
 		totRadPos.add(x);
 		
 		x = new Coord(17, 4);
 		radPos.add(x);
 		totRadPos.add(x);
-
-		x = new Coord(25, 10);
+		
+    	x = new Coord(17, 10);
 		radPos.add(x);
 		totRadPos.add(x);
 		
-		x = new Coord(17, 10);
+		x = new Coord(25, 4);
 		radPos.add(x);
 		totRadPos.add(x);
-
-		x = new Coord(25, 4);
+		
+		x = new Coord(25, 10);
 		radPos.add(x);
 		totRadPos.add(x);
 		
