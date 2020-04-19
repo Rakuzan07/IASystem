@@ -243,6 +243,9 @@ class Player {
 		Support support = new Support(board);
 		Coord postrap = null;
 		Coord lastdug = null;
+		int idReq=0;
+		double oreCoverage=0.0;
+		double totalCoverage=0.0;
 		Coord wheretodig = support.thinkRadar2();
 		;
 		
@@ -263,26 +266,45 @@ class Player {
 			for (Entity robot : board.myTeam.robots) {
 
 				if (!robot.pos.equals(new Coord(-1, -1))) {// actions only for the non dead robots
-
-					if (robot.item != EntityType.RADAR && robot.id == idRobotRadar)
-						idRobotRadar = -1;
+                    if(board.myRadarPos.contains(wheretodig)) idReq=-1;
+					if (robot.item != EntityType.RADAR && robot.id == idRobotRadar && idReq==-1)
+						{System.err.print("updating"+"\n");
+							idRobotRadar = -1;
+							totalCoverage=0.0;
+							for(int i = 0; i < board.height; i++) 
+								for (int j = 0; j < board.width; j++)
+									if(support.coveredByRadar[i][j] && 
+									board.getCell(new Coord(j, i)).ore > 0
+									&& !board.myTrapPos.contains(new Coord(j, i))
+									&& !board.myRadarPos.contains(new Coord(j, i))
+									&& support.checkHole(new Coord(j, i)))
+										totalCoverage+=board.getCell(new Coord(j, i)).ore;
+							
+						}
 					if (robot.item != EntityType.TRAP && robot.id == idRobotTrap)
 						idRobotTrap = -1;
-					if (board.myRadarCooldown == 0 && idRobotRadar == -1 && robot.id != idRobotTrap) {
+					//if (board.myRadarCooldown == 0 && idRobotRadar == -1 && robot.id != idRobotTrap  /*&& (totalCoverage==0 || oreCoverage/totalCoverage<=0.5)*/ ){
+					if ((!board.myRadarPos.contains(wheretodig)&&idReq==robot.id)||(board.myRadarCooldown == 0 && idRobotRadar == -1 && robot.id != idRobotTrap && (totalCoverage==0 || oreCoverage/totalCoverage<0.3))){
+					System.err.print("entra"+ "\n");
 						if (board.myRadarPos.contains(wheretodig)) {
 							wheretodig = support.thinkRadar2();
 						}
 						if (!wheretodig.equals(new Coord(-1, -1))) {
 							robot.action = Action.request(EntityType.RADAR);
 							idRobotRadar = robot.id;
+							idReq=robot.id;
+							System.err.print("entraaaaaa"+ "\n");
 						}
 
 					}
-					if (board.myTrapCooldown == 0 && idRobotTrap == -1 && robot.id != idRobotRadar) {
+					/*if (board.myTrapCooldown == 0 && idRobotTrap == -1 && robot.id != idRobotRadar) {
 						robot.action = Action.request(EntityType.TRAP);
 						idRobotTrap = robot.id;
 						postrap = support.estimate();
-					}
+					}*/
+					
+					
+					
 					if (idRobotRadar != robot.id && idRobotTrap != robot.id) {
 
 						if (robot.item == EntityType.AMADEUSIUM) {
@@ -333,7 +355,20 @@ class Player {
 				else if (robot.id == idRobotTrap)
 					idRobotTrap = -1;
 			} // FINE FOR
-			System.err.print(wheretodig);
+			oreCoverage=0.0;
+			//controlliamo quanti ore sono rimasti
+			for(int i = 0; i < board.height; i++) 
+				for (int j = 0; j < board.width; j++)
+					if(support.coveredByRadar[i][j] && 
+									board.getCell(new Coord(j, i)).ore > 0
+									&& !board.myTrapPos.contains(new Coord(j, i))
+									&& !board.myRadarPos.contains(new Coord(j, i))
+									&& support.checkHole(new Coord(j, i)))
+						oreCoverage+=board.getCell(new Coord(j, i)).ore;
+			
+			System.err.print(oreCoverage/totalCoverage+ "\n");
+			System.err.print(oreCoverage+ "\n");
+			System.err.print(totalCoverage);
 			// Send your actions for this turn
 			for (Entity robot : board.myTeam.robots) {
 				if (robot.action != null)
