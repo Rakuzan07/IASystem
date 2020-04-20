@@ -297,11 +297,11 @@ class Player {
 						}
 
 					}
-					/*
-					 * if (board.myTrapCooldown == 0 && idRobotTrap == -1 && robot.id !=
-					 * idRobotRadar) { robot.action = Action.request(EntityType.TRAP); idRobotTrap =
-					 * robot.id; postrap = support.estimate(); }
-					 */
+					
+					  if (board.myTrapCooldown == 0 && idRobotTrap == -1 && robot.id !=
+					  idRobotRadar) { robot.action = Action.request(EntityType.TRAP); idRobotTrap =
+					  robot.id; postrap = support.placeTrap(); }
+					 
 
 					if (idRobotRadar != robot.id && idRobotTrap != robot.id) {
 
@@ -349,9 +349,9 @@ class Player {
 							}
 							else {
 								//Non ho piazzato nessun radar mando i robot in una posizione stabilita tentando la fortuna
-								support.addPosToDig(robot, new Coord(15, 5+(robot.id%10)));
-								support.addPos(robot, new Coord(15, 5+(robot.id%10)));
-								robot.action = Action.dig(new Coord(15, 5+(robot.id%10)));
+								support.addPosToDig(robot, new Coord(5, 5+(robot.id%10)));
+								support.addPos(robot, new Coord(5, 5+(robot.id%10)));
+								robot.action = Action.dig(new Coord(5, 5+(robot.id%10)));
 							}
 						}
 					}
