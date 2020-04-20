@@ -242,7 +242,6 @@ class Player {
 		Board board = new Board(in);
 		Support support = new Support(board);
 		Coord postrap = null;
-		Coord lastdug = null;
 		int idReq=0;
 		double oreCoverage=0.0;
 		double totalCoverage=0.0;
@@ -257,18 +256,17 @@ class Player {
 			support.constructRadarBoard();
 			for (int i = 0; i < radars.length; i++)
 				support.updateRadarBoard(radars[i]);
-			/*
-			 * double percentage; double tot=board.width*board.height; double pos=0.0; for
-			 * (int i = 0; i < board.height; i++) for (int j = 0; j < board.width; j++)
-			 * if(support.coveredByRadar[i][j]) pos++; percentage=pos/tot;
-			 */
+			
 			// Insert your strategy here
 			for (Entity robot : board.myTeam.robots) {
 
 				if (!robot.pos.equals(new Coord(-1, -1))) {// actions only for the non dead robots
+					
                     if(board.myRadarPos.contains(wheretodig)) idReq=-1;
+                    
 					if (robot.item != EntityType.RADAR && robot.id == idRobotRadar && idReq==-1)
-						{System.err.print("updating"+"\n");
+						{
+							System.err.print("updating"+"\n");
 							idRobotRadar = -1;
 							totalCoverage=0.0;
 							for(int i = 0; i < board.height; i++) 
@@ -283,7 +281,7 @@ class Player {
 						}
 					if (robot.item != EntityType.TRAP && robot.id == idRobotTrap)
 						idRobotTrap = -1;
-					//if (board.myRadarCooldown == 0 && idRobotRadar == -1 && robot.id != idRobotTrap  /*&& (totalCoverage==0 || oreCoverage/totalCoverage<=0.5)*/ ){
+					
 					if ((!board.myRadarPos.contains(wheretodig)&&idReq==robot.id)||(board.myRadarCooldown == 0 && idRobotRadar == -1 && robot.id != idRobotTrap && (totalCoverage==0 || oreCoverage/totalCoverage<0.3))){
 					System.err.print("entra"+ "\n");
 						if (board.myRadarPos.contains(wheretodig)) {
@@ -321,18 +319,14 @@ class Player {
 									for (int j = 0; j < board.width; j++) {
 										if (support.coveredByRadar[i][j] && board.getCell(new Coord(j, i)).ore > 0
 												&& robot.pos.distance(new Coord(j, i)) < robot.pos.distance(closest)
-												//&& (lastdug == null || !lastdug.equals(new Coord(j, i)))
 												&& !board.myTrapPos.contains(new Coord(j, i))
 												&& support.checkHole(new Coord(j, i))) {
 											closest = new Coord(j, i);
-											//lastdug = closest;
-											
+																						
 										}
 									}
-								if(!closest.equals(new Coord(100, 100)))
-						    	{
+								if(!closest.equals(new Coord(100, 100))){
 									robot.action = Action.dig(closest);
-									//support.addHole(closest);
 									support.addPos(robot, closest);
 									}
 							else
@@ -341,7 +335,7 @@ class Player {
 								robot.action = Action.move(new Coord(9, 4));
 						}
 					}
-
+					//if the robots with the radars/traps are dead
 					else if (robot.id == idRobotRadar && robot.item == EntityType.RADAR)
 						robot.action = Action.dig(wheretodig);
 					else if (robot.id == idRobotTrap && robot.item == EntityType.TRAP && postrap != null)
@@ -354,6 +348,7 @@ class Player {
 					idRobotRadar = -1;
 				else if (robot.id == idRobotTrap)
 					idRobotTrap = -1;
+				
 			} // FINE FOR
 			oreCoverage=0.0;
 			//controlliamo quanti ore sono rimasti
@@ -729,7 +724,7 @@ class Support {
 	public Coord estimate() {
 		for (int j = 1; j < board.width; j++) {
 			for (int i = 0; i < board.height; i++) {
-				if (board.getCell(new Coord(j, i)).ore > 1 && !board.myRadarPos.contains(new Coord(j, i))
+				if (board.getCell(new Coord(j, i)).ore > 1 && !board.myRadarPos.contains(new Coord(j, i)) && this.checkHole(new Coord(j, i))
 						&& !board.myTrapPos.contains(new Coord(j, i)))
 					return new Coord(j, i);
 			}
