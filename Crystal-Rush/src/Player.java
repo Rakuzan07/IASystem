@@ -1,4 +1,5 @@
 
+
 import static java.lang.Math.*;
 
 import java.io.*;
@@ -327,24 +328,31 @@ class Player {
 								for (int j = 0; j < board.width; j++) {
 									for (int i = 0; i < board.height; i++) {
 										if (support.coveredByRadar[i][j] && board.getCell(new Coord(j, i)).ore > 0
-												&& support.isAlreadyVisited(new Coord(j, i))
+												&& !support.isAlreadyVisited(new Coord(j, i))
 												&& !board.myTrapPos.contains(new Coord(j, i))
 												&& support.checkHole(new Coord(j, i))) {
 											support.addPosToDig(robot, new Coord(j, i));
+											System.err.println("OK");
 											entry = true;
 											robot.action = Action.dig(new Coord(j, i));
 											support.addPos(robot, new Coord(j, i));
 										}
 									}
 								}
-								if (!entry && support.alreadyVisited.size() == 0)
-									robot.action = Action.dig(new Coord(15, 7));
-								else if (!entry) {
+								/*if (!entry && support.alreadyVisited.size() == 0){
+									        support.addPosToDig(robot, new Coord(15 ,7));
+											if((robot.pos.x-support.getPosToDig(robot).x==1||robot.pos.x-support.getPosToDig(robot).x==-1)&&(robot.pos.y-support.getPosToDig(robot).y==1||robot.pos.y-support.getPosToDig(robot).y==-1)){
+											if(!support.alreadyVisited.contains(new Coord(15,7)))support.alreadyVisited.add(new Coord(15,7));
+											}
+											robot.action = Action.dig(new Coord(15, 7));
+											support.addPos(robot, new Coord(15, 7));
+									}*/
+								if (!entry && support.alreadyVisited.size()>1) {
 									support.alreadyVisited.removeFirst();
 									for (int j = 0; j < board.width; j++)
 										for (int i = 0; i < board.height; i++) {
 											if (support.coveredByRadar[i][j] && board.getCell(new Coord(j, i)).ore > 0
-													&& support.isAlreadyVisited(new Coord(j, i))
+													&& !support.isAlreadyVisited(new Coord(j, i))
 													&& !board.myTrapPos.contains(new Coord(j, i))
 													&& support.checkHole(new Coord(j, i))) {
 												support.addPosToDig(robot, new Coord(j, i));
