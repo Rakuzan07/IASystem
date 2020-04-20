@@ -311,56 +311,47 @@ class Player {
 							support.alreadyVisited.add(support.getPosToDig(robot));
 						} else {
 
-							if (radars.length > 0) {
-
-								/*
-								 * Coord closest = new Coord(100, 100);
-								 * 
-								 * for (int i = 0; i < board.height; i++) for (int j = 0; j < board.width; j++)
-								 * { if (support.coveredByRadar[i][j] && board.getCell(new Coord(j, i)).ore > 0
-								 * && robot.pos.distance(new Coord(j, i)) < robot.pos.distance(closest) &&
-								 * !board.myTrapPos.contains(new Coord(j, i)) && support.checkHole(new Coord(j,
-								 * i))) { closest = new Coord(j, i);
-								 * 
-								 * } }
-								 */
-								boolean entry = false;
-								for (int j = 0; j < board.width; j++) {
-									for (int i = 0; i < board.height; i++) {
-										if (support.coveredByRadar[i][j] && board.getCell(new Coord(j, i)).ore > 0
+							if (board.myRadarPos.size() > 0) {
+                            //Ho piazzato almeno un Radar 
+							boolean finded=false;
+							for (int j = 0; j < board.width; j++) {
+								for (int i = 0; i < board.height; i++) {
+										if (board.getCell(new Coord(j,i)).known && board.getCell(new Coord(j, i)).ore > 0
 												&& !support.isAlreadyVisited(new Coord(j, i))
 												&& !board.myTrapPos.contains(new Coord(j, i))
 												&& support.checkHole(new Coord(j, i))) {
 											support.addPosToDig(robot, new Coord(j, i));
-											System.err.println("OK");
-											entry = true;
-											robot.action = Action.dig(new Coord(j, i));
 											support.addPos(robot, new Coord(j, i));
+											robot.action = Action.dig(new Coord(j, i));
+											finded=true;
+											break;
 										}
 									}
+								if(finded) break;
 								}
-								/*if (!entry && support.alreadyVisited.size() == 0){
-									        support.addPosToDig(robot, new Coord(15 ,7));
-											if((robot.pos.x-support.getPosToDig(robot).x==1||robot.pos.x-support.getPosToDig(robot).x==-1)&&(robot.pos.y-support.getPosToDig(robot).y==1||robot.pos.y-support.getPosToDig(robot).y==-1)){
-											if(!support.alreadyVisited.contains(new Coord(15,7)))support.alreadyVisited.add(new Coord(15,7));
-											}
-											robot.action = Action.dig(new Coord(15, 7));
-											support.addPos(robot, new Coord(15, 7));
-									}*/
-								if (!entry && support.alreadyVisited.size()>1) {
-									support.alreadyVisited.removeFirst();
-									for (int j = 0; j < board.width; j++)
-										for (int i = 0; i < board.height; i++) {
-											if (support.coveredByRadar[i][j] && board.getCell(new Coord(j, i)).ore > 0
-													&& !support.isAlreadyVisited(new Coord(j, i))
+							if(!finded) {
+								//Non ho trovato una posizione libera ( non scavata da noi ) e quindi devo ritornare su una posizione in cui ho gia scavato
+								for (int j = 0; j < board.width; j++) {
+									for (int i = 0; i < board.height; i++) {
+											if (board.getCell(new Coord(j,i)).known && board.getCell(new Coord(j, i)).ore > 0
 													&& !board.myTrapPos.contains(new Coord(j, i))
 													&& support.checkHole(new Coord(j, i))) {
 												support.addPosToDig(robot, new Coord(j, i));
-												robot.action = Action.dig(new Coord(j, i));
 												support.addPos(robot, new Coord(j, i));
+												robot.action = Action.dig(new Coord(j, i));
+												finded=true;
+												break;
 											}
 										}
-								}
+									if(finded) break;
+									}
+							}
+							}
+							else {
+								//Non ho piazzato nessun radar mando i robot in una posizione stabilita tentando la fortuna
+								support.addPosToDig(robot, new Coord(15, 5+(robot.id%10)));
+								support.addPos(robot, new Coord(15, 5+(robot.id%10)));
+								robot.action = Action.dig(new Coord(15, 5+(robot.id%10)));
 							}
 						}
 					}
